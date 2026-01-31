@@ -21,15 +21,18 @@ This is a complete **Home Assistant + Frigate NVR** setup using Docker Compose. 
 
 ### Directory Structure
 - `config/`: Configuration files for all services
-  - `config.yml`: Main Frigate configuration
+  - `config.yml`: Main Frigate configuration with MQTT, detectors, objects, and recording settings
   - `homeassistant/`: Home Assistant configuration files
-  - `mosquitto/`: MQTT broker configuration
+    - `configuration.yaml`: Main HA config with MQTT and Frigate integration
+    - `automations.yaml`: Automation rules (examples for person detection notifications)
+    - `blueprints/`: Reusable automation templates (motion_light, notify_leaving_zone, etc.)
+  - `mosquitto/`: MQTT broker configuration (`mosquitto.conf`)
 - `storage/`: Persistent data for all services
   - `frigate/`: Video recordings, snapshots, clips
   - `homeassistant/`: HA database and user data
   - `mosquitto/`: MQTT data and logs
-- `docker-compose.yml`: Complete stack orchestration
-- `.env.example`: Environment variables template
+- `docker-compose.yml`: Complete stack orchestration with network isolation
+- `.env.example`: Environment variables template (TZ, FRIGATE_RTSP_PASSWORD, HA URLs)
 
 ## Development Workflows
 
@@ -57,9 +60,12 @@ docker compose down
 ```
 
 ### Configuration Management
-- Frigate config goes in `config/config.yml` (create if missing)
+- Frigate config goes in `config/config.yml` (current setup includes CPU detector, person/car tracking)
+- Home Assistant config in `config/homeassistant/configuration.yaml` (MQTT discovery enabled)
+- MQTT broker config in `config/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
 - Config changes require container restart: `docker compose restart frigate`
-- Access web interface at `http://localhost:8971` for configuration validation
+- Access Frigate web interface at `http://localhost:8971` for configuration validation
+- Home Assistant web interface at `http://localhost:8123`
 
 ## Project-Specific Patterns
 
@@ -91,9 +97,12 @@ Frigate uses YAML configuration with these key sections:
 - Use `ffmpeg` probe commands to test camera streams before adding to config
 
 ### Home Assistant Integration
-- Frigate provides native Home Assistant integration
-- Publishes MQTT topics for events and statistics
-- Provides camera entities, sensors, and binary sensors
+- Frigate provides native Home Assistant integration via MQTT discovery
+- Current setup publishes to `frigate/` topic prefix with client ID `frigate`
+- MQTT broker accessible at `mqtt:1883` (container network) and `localhost:1883` (host)
+- WebSocket support on port `9001` for browser clients
+- Automation examples in `config/homeassistant/automations.yaml`
+- Blueprint templates available in `config/homeassistant/blueprints/`
 
 ### Hardware Acceleration
 - Configure GPU acceleration via `detectors` section
