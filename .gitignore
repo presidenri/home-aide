@@ -9,29 +9,29 @@
 storage/
 
 # Home Assistant specific files
-config/homeassistant/.storage/
-config/homeassistant/home-assistant.log*
-config/homeassistant/home-assistant_v2.db*
-config/homeassistant/*.db
-config/homeassistant/*.db-wal
-config/homeassistant/*.db-shm
-config/homeassistant/secrets.yaml
-config/homeassistant/known_devices.yaml
-config/homeassistant/.uuid
-config/homeassistant/.cloud/
-config/homeassistant/deps/
-config/homeassistant/tts/
-config/homeassistant/.*
+configs/homeassistant/.storage/
+configs/homeassistant/home-assistant.log*
+configs/homeassistant/home-assistant_v2.db*
+configs/homeassistant/*.db
+configs/homeassistant/*.db-wal
+configs/homeassistant/*.db-shm
+configs/homeassistant/secrets.yaml
+configs/homeassistant/known_devices.yaml
+configs/homeassistant/.uuid
+configs/homeassistant/.cloud/
+configs/homeassistant/deps/
+configs/homeassistant/tts/
+configs/homeassistant/.*
 
 # Frigate specific files
-config/frigate.db*
-config/clips/
-config/recordings/
-config/snapshots/
+configs/frigate/frigate.db*
+configs/frigate/clips/
+configs/frigate/recordings/
+configs/frigate/snapshots/
 
 # MQTT data
-config/mosquitto/passwd
-config/mosquitto/*.db
+configs/mosquitto/passwd
+configs/mosquitto/*.db
 
 # Logs
 logs/

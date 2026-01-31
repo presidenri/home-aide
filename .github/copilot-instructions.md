@@ -20,8 +20,10 @@ This is a complete **Home Assistant + Frigate NVR** setup using Docker Compose. 
   - Enables real-time communication between services
 
 ### Directory Structure
-- `config/`: Configuration files for all services
-  - `config.yml`: Main Frigate configuration with MQTT, detectors, objects, and recording settings
+- `configs/`: Configuration files for all services
+  - `frigate/`: Frigate NVR configuration files
+    - `config.yml`: Main Frigate configuration with MQTT, detectors, objects, and recording settings
+    - `backup_config.yaml`: Backup configuration file
   - `homeassistant/`: Home Assistant configuration files
     - `configuration.yaml`: Main HA config with MQTT and Frigate integration
     - `automations.yaml`: Automation rules (examples for person detection notifications)
@@ -60,9 +62,9 @@ docker compose down
 ```
 
 ### Configuration Management
-- Frigate config goes in `config/config.yml` (current setup includes CPU detector, person/car tracking)
-- Home Assistant config in `config/homeassistant/configuration.yaml` (MQTT discovery enabled)
-- MQTT broker config in `config/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
+- Frigate config goes in `configs/frigate/config.yml` (current setup includes CPU detector, person/car tracking)
+- Home Assistant config in `configs/homeassistant/configuration.yaml` (MQTT discovery enabled)
+- MQTT broker config in `configs/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
 - Config changes require container restart: `docker compose restart frigate`
 - Access Frigate web interface at `http://localhost:8971` for configuration validation
 - Home Assistant web interface at `http://localhost:8123`
@@ -101,8 +103,8 @@ Frigate uses YAML configuration with these key sections:
 - Current setup publishes to `frigate/` topic prefix with client ID `frigate`
 - MQTT broker accessible at `mqtt:1883` (container network) and `localhost:1883` (host)
 - WebSocket support on port `9001` for browser clients
-- Automation examples in `config/homeassistant/automations.yaml`
-- Blueprint templates available in `config/homeassistant/blueprints/`
+- Automation examples in `configs/homeassistant/automations.yaml`
+- Blueprint templates available in `configs/homeassistant/blueprints/`
 
 ### Hardware Acceleration
 - Configure GPU acceleration via `detectors` section

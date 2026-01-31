@@ -48,7 +48,7 @@ A complete **Home Assistant + Frigate NVR** setup using Docker Compose. This pro
 
 ### Adding Cameras
 
-Edit `config/config.yml` to add your cameras:
+Edit `configs/frigate/config.yml` to add your cameras:
 
 ```yaml
 cameras:
@@ -64,14 +64,14 @@ cameras:
 
 ### Home Assistant Automations
 
-Example automations are provided in `config/homeassistant/automations.yaml`. Blueprint templates are available in `config/homeassistant/blueprints/` for:
+Example automations are provided in `configs/homeassistant/automations.yaml`. Blueprint templates are available in `configs/homeassistant/blueprints/` for:
 - Motion-activated lights
 - Person detection notifications  
 - Zone departure alerts
 
 ### MQTT Configuration
 
-The MQTT broker is pre-configured for anonymous access. For production use, edit `config/mosquitto/mosquitto.conf` to add authentication.
+The MQTT broker is pre-configured for anonymous access. For production use, edit `configs/mosquitto/mosquitto.conf` to add authentication.
 
 ## Architecture
 
@@ -140,7 +140,7 @@ docker compose logs frigate | grep -i error
 ### Storage Issues
 - Recordings are auto-managed by retention policies
 - Check available space: `df -h storage/`
-- Adjust retention in `config/config.yml`
+- Adjust retention in `configs/frigate/config.yml`
 
 ### Performance Issues
 - Monitor resource usage: `docker stats`
@@ -150,9 +150,9 @@ docker compose logs frigate | grep -i error
 ## Development
 
 ### File Structure
-- `config/config.yml`: Main Frigate configuration
-- `config/homeassistant/`: Home Assistant configuration files
-- `config/mosquitto/mosquitto.conf`: MQTT broker settings
+- `configs/frigate/config.yml`: Main Frigate configuration
+- `configs/homeassistant/`: Home Assistant configuration files
+- `configs/mosquitto/mosquitto.conf`: MQTT broker settings
 - `docker-compose.yml`: Service orchestration
 
 ### Testing Changes

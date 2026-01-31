@@ -7,7 +7,7 @@ services:
     ports:
       - "8123:8123"
     volumes:
-      - ./config/homeassistant:/config
+      - ./configs/homeassistant:/config
       - ./storage/homeassistant:/data
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
@@ -28,7 +28,7 @@ services:
       - "1883:1883"
       - "9001:9001"
     volumes:
-      - ./config/mosquitto:/mosquitto/config
+      - ./configs/mosquitto:/mosquitto/config
       - ./storage/mosquitto/data:/mosquitto/data
       - ./storage/mosquitto/logs:/mosquitto/log
     environment:
@@ -43,7 +43,7 @@ services:
     stop_grace_period: 30s
     image: ghcr.io/blakeblackshear/frigate:stable
     volumes:
-      - ./config:/config
+      - ./configs/frigate:/config
       - ./storage:/media/frigate
       - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
         target: /tmp/cache
