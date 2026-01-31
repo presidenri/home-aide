@@ -1,0 +1,70 @@
+services:
+  # Home Assistant - main home automation hub
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./config/homeassistant:/config
+      - ./storage/homeassistant:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=${TZ:-America/New_York}
+    privileged: true
+    networks:
+      - frigate-network
+    depends_on:
+      - mqtt
+
+  # MQTT broker for Home Assistant and Frigate integration
+  mqtt:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./config/mosquitto:/mosquitto/config
+      - ./storage/mosquitto/data:/mosquitto/data
+      - ./storage/mosquitto/logs:/mosquitto/log
+    environment:
+      - PUID=1000
+      - PGID=1000
+    networks:
+      - frigate-network
+
+  frigate:
+    container_name: frigate
+    restart: unless-stopped
+    stop_grace_period: 30s
+    image: ghcr.io/blakeblackshear/frigate:stable
+    volumes:
+      - ./config:/config
+      - ./storage:/media/frigate
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "8971:8971"
+      - "8554:8554" # RTSP feeds
+    environment:
+      - FRIGATE_RTSP_PASSWORD=${FRIGATE_RTSP_PASSWORD:-password}
+      - TZ=${TZ:-America/New_York}
+    depends_on:
+      - mqtt
+    networks:
+      - frigate-network
+    # Uncomment for hardware acceleration
+    # devices:
+    #   - /dev/dri:/dev/dri # Intel GPU
+    #   - /dev/apex_0:/dev/apex_0 # Google Coral TPU
+    # privileged: true # Required for some hardware acceleration
+
+networks:
+  frigate-network:
+    driver: bridge

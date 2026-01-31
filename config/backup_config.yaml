@@ -1,0 +1,99 @@
+# Frigate Configuration for Home Assistant Integration
+# Place your camera configurations in the cameras section below
+
+# MQTT Configuration for Home Assistant
+mqtt:
+  enabled: true
+  host: mqtt
+  port: 1883
+  # user: frigate
+  # password: your-mqtt-password
+  topic_prefix: frigate
+  client_id: frigate
+  stats_interval: 60
+
+# Database configuration
+database:
+  path: /media/frigate/frigate.db
+
+# Detectors configuration (using CPU by default)
+detectors:
+  cpu1:
+    type: cpu
+    num_threads: 3
+
+# Objects to detect
+objects:
+  track:
+    - person
+    - car
+    - bicycle
+    - motorcycle
+    - bus
+    - truck
+    - cat
+    - dog
+  filters:
+    person:
+      min_area: 5000
+      max_area: 100000
+      threshold: 0.7
+    car:
+      min_area: 15000
+      max_area: 50000
+      threshold: 0.7
+
+# Recording configuration
+record:
+  enabled: true
+  retain:
+    days: 7
+    mode: motion
+  events:
+    retain:
+      default: 14
+      mode: active_objects
+
+# Snapshots configuration
+snapshots:
+  enabled: true
+  timestamp: false
+  bounding_box: true
+  retain:
+    default: 14
+
+# Live view configuration
+live:
+  height: 720
+  quality: 8
+
+# Example cameras configuration - customize for your setup
+cameras:
+  # Example camera - replace with your actual camera details
+  front_door:
+    enabled: false  # Set to true when configured
+    ffmpeg:
+      inputs:
+        - path: rtsp://user:password@camera_ip:554/stream1
+          roles:
+            - detect
+            - record
+        - path: rtsp://user:password@camera_ip:554/stream2
+          roles:
+            - rtmp
+    detect:
+      width: 1920
+      height: 1080
+      fps: 5
+    zones:
+      # Define detection zones
+      entry_area:
+        coordinates: 100,100,400,100,400,400,100,400
+        objects:
+          - person
+          - car
+    motion:
+      mask:
+        # Define motion mask to ignore areas like trees, flags, etc.
+        # Format: x1,y1,x2,y2,x3,y3,...
+        - 0,0,100,0,100,50,0,50  # Example: ignore top-left corner
