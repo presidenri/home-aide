@@ -29,18 +29,18 @@ This is a complete **Home Assistant + Frigate NVR** setup using Docker Compose. 
     - `automations.yaml`: Automation rules (examples for person detection notifications)
     - `blueprints/`: Reusable automation templates (motion_light, notify_leaving_zone, etc.)
   - `mosquitto/`: MQTT broker configuration (`mosquitto.conf`)
-- `storage/`: Persistent data for all services
+- `storage/`: Persistent data for all services (excluded from git)
   - `frigate/`: Video recordings, snapshots, clips
   - `homeassistant/`: HA database and user data
   - `mosquitto/`: MQTT data and logs
 - `docker-compose.yml`: Complete stack orchestration with network isolation
-- `.env.example`: Environment variables template (TZ, FRIGATE_RTSP_PASSWORD, HA URLs)
+- `.env`: Active environment configuration (copy from `.env.example`)
 
 ## Development Workflows
 
 ### Starting/Managing Services
 ```bash
-# Copy environment template
+# Copy environment template (if .env doesn't exist)
 cp .env.example .env
 
 # Edit environment variables
@@ -49,25 +49,30 @@ nano .env
 # Start all services
 docker compose up -d
 
-# View logs
+# View logs in real-time
 docker compose logs -f frigate
 docker compose logs -f mqtt
 docker compose logs -f homeassistant
 
 # Restart after config changes
 docker compose restart frigate
+docker compose restart homeassistant
 
 # Stop services
 docker compose down
+
+# Update services to latest images
+docker compose pull && docker compose up -d
 ```
 
 ### Configuration Management
 - Frigate config goes in `configs/frigate/config.yml` (current setup includes CPU detector, person/car tracking)
 - Home Assistant config in `configs/homeassistant/configuration.yaml` (MQTT discovery enabled)
 - MQTT broker config in `configs/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
-- Config changes require container restart: `docker compose restart frigate`
+- Config changes require container restart: `docker compose restart <service>`
 - Access Frigate web interface at `http://localhost:8971` for configuration validation
-- Home Assistant web interface at `http://localhost:8123`
+- Home Assistant web interface at `http://localhost:8123` (initial setup required)
+- Test camera streams: `ffprobe -rtsp_transport tcp "rtsp://user:pass@ip:554/stream"`
 
 ## Project-Specific Patterns
 
@@ -137,3 +142,7 @@ When working with this codebase:
 2. Use the web UI for real-time config validation
 3. Monitor container logs when debugging detection issues
 4. Consider hardware acceleration for multiple camera setups
+5. The `storage/` directory is gitignored - contains all persistent data
+6. For production: disable anonymous MQTT access in `mosquitto.conf`
+7. Enable cameras by setting `enabled: true` in Frigate config after testing streams
+8. Use blueprints in `configs/homeassistant/blueprints/` for common automation patterns
