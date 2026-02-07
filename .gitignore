@@ -28,6 +28,10 @@ configs/frigate/frigate.db*
 configs/frigate/clips/
 configs/frigate/recordings/
 configs/frigate/snapshots/
+configs/frigate/.exports
+configs/frigate/.jwt_secret
+configs/frigate/.timeline
+configs/frigate/.vacuum
 
 # MQTT data
 configs/mosquitto/passwd
