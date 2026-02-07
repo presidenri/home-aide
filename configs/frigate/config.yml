@@ -78,9 +78,6 @@ cameras:
           roles:
             - detect
             - record
-        - path: rtsp://user:password@camera_ip:554/stream2
-          roles:
-            - rtmp
     detect:
       width: 1920
       height: 1080
