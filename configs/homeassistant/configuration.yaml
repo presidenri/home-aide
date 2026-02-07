@@ -11,20 +11,10 @@ frontend:
 # Enable configuration UI
 config:
 
-# MQTT configuration for Frigate integration
+# MQTT integration - configure broker through UI or use manual entry format
+# For manual configuration, use this format:
 mqtt:
-  broker: mqtt
-  port: 1883
-  # username: frigate
-  # password: your-mqtt-password
-  discovery: true
-  discovery_prefix: homeassistant
-  birth_message:
-    topic: 'hass/status'
-    payload: 'online'
-  will_message:
-    topic: 'hass/status' 
-    payload: 'offline'
+  sensor: []  # Placeholder to ensure mqtt integration loads
 
 # Frigate integration
 frigate:
