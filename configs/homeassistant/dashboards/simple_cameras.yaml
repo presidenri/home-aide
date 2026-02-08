@@ -1,0 +1,74 @@
+# Basic Camera Dashboard (works without Frigate entities)
+title: Cameras
+views:
+  - title: Live Feeds  
+    path: live
+    icon: mdi:video
+    cards:
+      # Basic camera info card
+      - type: markdown
+        content: |
+          ## Security Camera System
+          
+          **Camera Status:**
+          - Camera Name: Hikvision Outdoor
+          - Resolution: 4K/640x360 (Record/Detect)
+          - Detection: Person, Car, Bicycle, Motorcycle
+          - Location: Outdoor Area
+          
+          **Access Methods:**
+          - **Frigate Web UI**: [http://localhost:8971](http://localhost:8971)
+          - **Live Stream**: Available when Frigate entities load
+          - **Media Browser**: Home Assistant → Media Browser → Frigate
+          
+          **Next Steps:**
+          1. Check that Frigate is running: `docker ps`
+          2. Access Frigate UI to verify camera feed
+          3. Wait for Home Assistant to discover Frigate entities (may take a few minutes)
+          4. Refresh this dashboard once entities appear
+
+      # Basic system status
+      - type: entities
+        title: "System Status"
+        entities:
+          - entity: sun.sun
+            name: "Sun Position"
+        show_header_toggle: false
+            
+  - title: Setup
+    path: setup
+    icon: mdi:cog
+    cards:
+      # Setup instructions
+      - type: markdown
+        content: |
+          ## Frigate Integration Setup
+          
+          ### ✅ Integration Status: **WORKING**
+          You can see Hikvision Outdoor entities in Home Assistant!
+          
+          ### 🎯 Next Steps
+          1. **Add Camera to Dashboard**: The entities are now available
+          2. **Check Entity Names**: Go to Settings → Devices & Services → Frigate → Hikvision Outdoor
+          3. **Customize Dashboard**: Update this dashboard with actual entity names
+          
+          ### 📹 Access Your Camera
+          - **Frigate Web UI**: [http://localhost:8971](http://localhost:8971)
+          - **Media Browser**: Home Assistant → Media Browser → Frigate
+          - **Live Feed**: Available through camera entities
+          
+          ### 🔧 Common Entity Names
+          Expected entities (check in HA if they exist):
+          - `camera.hikvision_outdoor` (live camera feed)
+          - `binary_sensor.hikvision_outdoor_person_occupancy` (person detection)
+          - `switch.hikvision_outdoor_detect` (detection control)
+
+      # System links
+      - type: markdown
+        title: "Quick Access"
+        content: |
+          ### 🔗 Quick Links
+          - **[Frigate Web UI](http://localhost:8971)** - Full camera interface
+          - **[Home Assistant](http://localhost:8123)** - Main dashboard  
+          - **Settings → Devices & Services** - Manage integrations
+          - **Media Browser** - View recordings and clips

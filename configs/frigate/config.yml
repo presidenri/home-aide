@@ -1,0 +1,116 @@
+# Frigate Configuration for Home Assistant Integration
+# Place your camera configurations in the cameras section below
+
+# MQTT Configuration for Home Assistant
+mqtt:
+  enabled: true
+  host: mqtt  # Using Docker service name
+  port: 1883
+  # user: frigate
+  # password: your-mqtt-password
+  topic_prefix: frigate
+  client_id: frigate
+  stats_interval: 60
+
+# Database configuration - keep local to avoid SQLite locking on network storage
+database:
+  path: /config/frigate.db
+
+# Model configuration for YOLOv9-T with OpenVINO
+model:
+  model_type: yolo-generic
+  width: 640
+  height: 640
+  input_tensor: nchw
+  input_dtype: float
+  path: /config/model_cache/yolov9-t-converted.onnx
+  labelmap_path: /labelmap/coco-80.txt
+
+# Authentication configuration
+# Password reset completed - admin password is now available
+
+# Detectors configuration (using OpenVINO with YOLOv9-T for Intel CPU)
+detectors:
+  ov:
+    type: openvino
+    device: CPU
+
+# Objects to detect
+objects:
+  track:
+    - person
+    - car
+    - bicycle
+    - motorcycle
+    - bus
+    - cat
+    - dog
+  filters:
+    person:
+      min_area: 5000
+      max_area: 100000
+      threshold: 0.7
+    car:
+      min_area: 15000
+      max_area: 50000
+      threshold: 0.7
+
+# Recording configuration
+record:
+  enabled: true
+  retain:
+    days: 14
+    mode: motion
+  alerts:
+    retain:
+      days: 14
+  detections:
+    retain:
+      days: 14
+snapshots:
+  enabled: true
+  timestamp: false
+  bounding_box: true
+  retain:
+    default: 14
+
+# Live view configuration
+live:
+  height: 720
+  quality: 8
+
+# Cameras configuration
+cameras:
+  # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
+  hikvision_outdoor:
+    enabled: true   # Camera is now configured and tested
+    ffmpeg:
+      inputs:
+        # Main stream for recording (4K UHD)
+        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+          roles:
+            - record
+        # Sub stream for detection (lower bandwidth)
+        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
+          roles:
+            - detect
+    detect:
+      width: 640    # Sub stream actual resolution
+      height: 360
+      fps: 5
+    zones:
+      # Define detection zones (adjust coordinates based on your camera view)
+      main_area:
+        coordinates: 50,50,590,50,590,310,50,310
+        objects:
+          - person
+          - car
+          - bicycle
+          - motorcycle
+    # Optional: Add motion masks later if needed to ignore areas like trees, flags, etc.
+    # motion:
+    #   mask:
+    #     - 0,0,100,0,100,50,0,50  # Example: ignore top-left corner
+detect:
+  enabled: true
+version: 0.16-0

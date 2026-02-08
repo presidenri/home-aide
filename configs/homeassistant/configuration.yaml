@@ -1,0 +1,77 @@
+# Basic Home Assistant configuration for Frigate integration
+# This file will be automatically extended by Home Assistant
+
+# Basic configuration
+default_config:
+
+# Enable the frontend
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Enable configuration UI
+config:
+
+# Lovelace dashboards  
+lovelace:
+  mode: storage
+  dashboards:
+    working-cameras:
+      mode: yaml
+      title: Live Cameras
+      icon: mdi:camera
+      show_in_sidebar: true
+      filename: dashboards/working_cameras.yaml
+    security-dashboard:
+      mode: yaml  
+      title: Security Dashboard
+      icon: mdi:shield-home
+      show_in_sidebar: true
+      filename: dashboards/security_dashboard.yaml
+
+# Enable media source for Frigate Media Browser
+media_source:
+
+# MQTT integration - configure broker through UI or use manual entry format
+# For manual configuration, use this format:
+mqtt:
+  sensor: []  # Placeholder to ensure mqtt integration loads
+
+# Frigate integration
+frigate:
+  host: frigate
+  port: 8971
+
+# Enable person detection automations
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Recorder configuration - customize retention as needed
+recorder:
+  purge_keep_days: 7
+  db_url: sqlite:////data/home-assistant_v2.db
+  exclude:
+    entity_globs:
+      - sensor.frigate_*_fps
+      - sensor.frigate_*_skipped_fps
+    domains:
+      - automation
+      - updater
+    entities:
+      - sun.sun
+      - weather.home
+
+# Logger configuration
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: debug
+    homeassistant.components.frigate: debug
+
+# HTTP configuration - to trust Cloudflare proxies:
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.16.0.0/12  # Docker network range
+    - 127.0.0.1
+    - ::1

@@ -1,0 +1,13 @@
+# Automation configurations
+# Example: Person detection notification
+# - alias: "Person Detected at Front Door"
+#   trigger:
+#     - platform: mqtt
+#       topic: "frigate/front_door/person"
+#   action:
+#     - service: notify.mobile_app_your_phone
+#       data:
+#         title: "Person Detected"
+#         message: "Someone is at the front door"
+#         data:
+#           image: "http://frigate:8971/api/front_door/latest.jpg"
