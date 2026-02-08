@@ -68,6 +68,19 @@ services:
     #   - /dev/apex_0:/dev/apex_0 # Google Coral TPU
     # privileged: true # Required for some hardware acceleration
 
+  # Cloudflare Tunnel for secure remote access to Home Assistant
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - frigate-network
+    depends_on:
+      - homeassistant
+
 networks:
   frigate-network:
     driver: bridge
