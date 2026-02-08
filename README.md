@@ -61,57 +61,38 @@
 
 ```mermaid
 graph TB
-    subgraph "External Access"
-        Internet[🌐 Internet]
-        CloudFlare[☁️ Cloudflare Tunnel<br/>Secure Remote Access]
-        Camera[📹 Hikvision Camera<br/>DS-2CD2387G3-LI2UY<br/>8MP/4K]
-    end
+    Internet[🌐 Internet]
+    CloudFlare[☁️ Cloudflare Tunnel]
+    Camera[📹 Hikvision Camera 8MP/4K]
     
-    subgraph "Docker Network - frigate-network"
-        subgraph "Home Automation"
-            HA[🏠 Home Assistant<br/>:8123<br/>Automation Hub]
-            HADash[📊 Dashboards<br/>- Security Dashboard<br/>- Camera Views<br/>- Detection Status]
-        end
-        
-        subgraph "AI/NVR Services"
-            Frigate[🔍 Frigate NVR<br/>:8971 Web, :8554 RTSP<br/>Object Detection]
-            OpenVINO[🧠 OpenVINO Detector<br/>YOLOv9-T Model<br/>CPU Optimized]
-            Detection[🎯 Detection Engine<br/>Person, Car, Bicycle<br/>Motorcycle, Pets]
-        end
-        
-        subgraph "Communication"
-            MQTT[📡 MQTT Broker<br/>Mosquitto<br/>:1883, :9001<br/>Message Bus]
-        end
-    end
+    HA[🏠 Home Assistant :8123]
+    HADash[📊 Security Dashboards]
     
-    subgraph "Storage"
-        LocalConfig[💾 Local Storage<br/>Config & DB<br/>./configs/frigate]
-        NetworkStorage[🗄️ Network Storage<br/>/mnt/unas2/frigate<br/>Recordings & Clips]
-        HAStorage[💾 HA Storage<br/>Database & Logs<br/>./storage/homeassistant]
-    end
+    Frigate[🔍 Frigate NVR :8971]
+    OpenVINO[🧠 OpenVINO YOLOv9-T]
+    Detection[🎯 Object Detection]
+    
+    MQTT[📡 MQTT Broker :1883]
+    
+    LocalConfig[💾 Local Config/DB]
+    NetworkStorage[🗄️ Network Storage]
+    HAStorage[💾 HA Storage]
     
     Internet --> CloudFlare
     CloudFlare --> HA
-    Camera -->|RTSP Stream<br/>Main: 4K<br/>Sub: 640x360| Frigate
+    Camera -->|RTSP 4K + Sub| Frigate
     
     Frigate --> OpenVINO
     OpenVINO --> Detection
     Detection --> Frigate
-    Frigate <-->|MQTT Messages<br/>Detection Events| MQTT
-    HA <-->|MQTT Discovery<br/>State Updates| MQTT
+    
+    Frigate <-->|Events| MQTT
+    HA <-->|Discovery| MQTT
     HA --> HADash
     
     Frigate --> LocalConfig
     Frigate --> NetworkStorage
     HA --> HAStorage
-    
-    style HA fill:#41BDF5
-    style Frigate fill:#1A3A52
-    style MQTT fill:#3C5280
-    style OpenVINO fill:#0071C5
-    style Detection fill:#00B4A0
-    style CloudFlare fill:#F38020
-    style Camera fill:#E31E24
 ```
 
 ### How It Works
