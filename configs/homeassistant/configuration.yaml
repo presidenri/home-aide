@@ -67,3 +67,11 @@ logger:
   logs:
     homeassistant.components.mqtt: debug
     homeassistant.components.frigate: debug
+
+# HTTP configuration - to trust Cloudflare proxies:
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.16.0.0/12  # Docker network range
+    - 127.0.0.1
+    - ::1
