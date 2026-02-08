@@ -4,7 +4,7 @@
 # MQTT Configuration for Home Assistant
 mqtt:
   enabled: true
-  host: mqtt
+  host: mqtt  # Using Docker service name
   port: 1883
   # user: frigate
   # password: your-mqtt-password
@@ -12,9 +12,12 @@ mqtt:
   client_id: frigate
   stats_interval: 60
 
-# Database configuration
+# Database configuration - keep local to avoid SQLite locking on network storage
 database:
-  path: /media/frigate/frigate.db
+  path: /config/frigate.db
+
+# Authentication configuration
+# Password reset completed - admin password is now available
 
 # Detectors configuration (using CPU by default)
 detectors:
@@ -30,7 +33,6 @@ objects:
     - bicycle
     - motorcycle
     - bus
-    - truck
     - cat
     - dog
   filters:
@@ -47,7 +49,7 @@ objects:
 record:
   enabled: true
   retain:
-    days: 7
+    days: 14
     mode: motion
   alerts:
     retain:
@@ -67,33 +69,38 @@ live:
   height: 720
   quality: 8
 
-# Example cameras configuration - customize for your setup
+# Cameras configuration
 cameras:
-  # Example camera - replace with your actual camera details
-  front_door:
-    enabled: false  # Set to true when configured
+  # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
+  hikvision_outdoor:
+    enabled: true   # Camera is now configured and tested
     ffmpeg:
       inputs:
-        - path: rtsp://user:password@camera_ip:554/stream1
+        # Main stream for recording (4K UHD)
+        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+          roles:
+            - record
+        # Sub stream for detection (lower bandwidth)
+        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
           roles:
             - detect
-            - record
     detect:
-      width: 1920
-      height: 1080
+      width: 640    # Sub stream actual resolution
+      height: 360
       fps: 5
     zones:
-      # Define detection zones
-      entry_area:
-        coordinates: 100,100,400,100,400,400,100,400
+      # Define detection zones (adjust coordinates based on your camera view)
+      main_area:
+        coordinates: 50,50,590,50,590,310,50,310
         objects:
           - person
           - car
-    motion:
-      mask:
-        # Define motion mask to ignore areas like trees, flags, etc.
-        # Format: x1,y1,x2,y2,x3,y3,...
-        - 0,0,100,0,100,50,0,50  # Example: ignore top-left corner
+          - bicycle
+          - motorcycle
+    # Optional: Add motion masks later if needed to ignore areas like trees, flags, etc.
+    # motion:
+    #   mask:
+    #     - 0,0,100,0,100,50,0,50  # Example: ignore top-left corner
 detect:
   enabled: true
 version: 0.16-0

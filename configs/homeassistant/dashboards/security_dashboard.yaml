@@ -1,0 +1,117 @@
+title: Security Dashboard
+views:
+  - title: Cameras
+    path: cameras
+    icon: mdi:cctv
+    cards:
+      # Main camera feed
+      - type: picture-entity
+        title: "Outdoor Camera - Live View"
+        entity: camera.hikvision_outdoor
+        camera_view: live
+        show_state: false
+        show_name: true
+        
+      # Person detection sensor
+      - type: entities
+        title: "Detection Status"
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.hikvision_outdoor_person_occupancy
+            name: "Person Detected"
+          - entity: binary_sensor.hikvision_outdoor_all_occupancy
+            name: "Motion Detected"
+          - entity: switch.hikvision_outdoor_detect
+            name: "Detection Enabled"
+            
+      # Advanced Camera Card - Live View
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.hikvision_outdoor
+            title: "Outdoor Camera"
+        view:
+          default: live
+          camera_select: current
+        live:
+          auto_play: all
+          auto_pause: all
+          lazy_load: true
+        menu:
+          buttons:
+            frigate: true
+            cameras: true
+            live: true
+            clips: true
+            snapshots: true
+            recordings: true
+            timeline: true
+        dimensions:
+          aspect_ratio: "16:9"
+        performance:
+          features:
+            animated_progress_indicator: true
+
+  - title: Events
+    path: events  
+    icon: mdi:timeline-clock-outline
+    cards:
+      # Advanced Camera Card - Events Timeline
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.hikvision_outdoor
+            title: "Event Timeline" 
+        view:
+          default: clips
+        menu:
+          buttons:
+            frigate: true
+            live: false
+            clips: true
+            snapshots: true
+            recordings: true
+            timeline: true
+        media_viewer:
+          auto_play: all
+          auto_pause: all
+        dimensions:
+          aspect_ratio: "16:9"
+          
+      # Detection statistics  
+      - type: history-graph
+        title: "Detection History"
+        entities:
+          - binary_sensor.hikvision_outdoor_person_occupancy
+          - binary_sensor.hikvision_outdoor_all_occupancy
+        hours_to_show: 24
+        refresh_interval: 30
+
+  - title: System
+    path: system
+    icon: mdi:cog
+    cards:
+      # Camera Performance Stats
+      - type: entities
+        title: "Camera Performance"
+        show_header_toggle: false
+        entities:
+          - entity: sensor.hikvision_outdoor_camera_fps
+            name: "Camera FPS"
+          - entity: sensor.hikvision_outdoor_detection_fps
+            name: "Detection FPS"
+          - entity: switch.hikvision_outdoor_recordings
+            name: "Recording Enabled"
+            
+      # System Access
+      - type: markdown
+        content: |
+          ## System Management
+          
+          ### 🔧 Direct Access
+          - **[Frigate Web Interface](http://localhost:8971)** - Full system control
+          - **[Media Browser](#)** - Browse all recordings
+          
+          ### 📊 Performance Monitoring
+          Check camera FPS and detection rates above. For detailed system stats, use the Frigate web interface.
+          
+          ### 💾 Storage
+          Recordings stored in: `/mnt/unas2/frigate/`

@@ -22,6 +22,9 @@ configs/homeassistant/.cloud/
 configs/homeassistant/deps/
 configs/homeassistant/tts/
 configs/homeassistant/.*
+configs/homeassistant/custom_components/hacs/
+configs/homeassistant/custom_components/frigate/
+configs/homeassistant/www/community/advanced-camera-card/
 
 # Frigate specific files
 configs/frigate/frigate.db*
@@ -32,6 +35,7 @@ configs/frigate/.exports
 configs/frigate/.jwt_secret
 configs/frigate/.timeline
 configs/frigate/.vacuum
+configs/frigate/backup.db
 
 # MQTT data
 configs/mosquitto/passwd

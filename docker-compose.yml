@@ -43,8 +43,8 @@ services:
     stop_grace_period: 30s
     image: ghcr.io/blakeblackshear/frigate:stable
     volumes:
-      - ./configs/frigate:/config
-      - ./storage:/media/frigate
+      - ./configs/frigate:/config # Config and database (local)
+      - /mnt/unas2/frigate:/media/frigate # Recordings (network storage)
       - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
         target: /tmp/cache
         tmpfs:
@@ -55,6 +55,9 @@ services:
     environment:
       - FRIGATE_RTSP_PASSWORD=${FRIGATE_RTSP_PASSWORD:-password}
       - TZ=${TZ:-America/New_York}
+      - FRIGATE_CAMERA_USERNAME=${FRIGATE_CAMERA_USERNAME}
+      - FRIGATE_CAMERA_PASSWORD=${FRIGATE_CAMERA_PASSWORD}
+      - FRIGATE_CAMERA_IP=${FRIGATE_CAMERA_IP}
     depends_on:
       - mqtt
     networks:

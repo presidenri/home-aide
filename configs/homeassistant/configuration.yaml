@@ -11,6 +11,26 @@ frontend:
 # Enable configuration UI
 config:
 
+# Lovelace dashboards  
+lovelace:
+  mode: storage
+  dashboards:
+    working-cameras:
+      mode: yaml
+      title: Live Cameras
+      icon: mdi:camera
+      show_in_sidebar: true
+      filename: dashboards/working_cameras.yaml
+    security-dashboard:
+      mode: yaml  
+      title: Security Dashboard
+      icon: mdi:shield-home
+      show_in_sidebar: true
+      filename: dashboards/security_dashboard.yaml
+
+# Enable media source for Frigate Media Browser
+media_source:
+
 # MQTT integration - configure broker through UI or use manual entry format
 # For manual configuration, use this format:
 mqtt:
