@@ -16,14 +16,24 @@ mqtt:
 database:
   path: /config/frigate.db
 
+# Model configuration for YOLOv9-T with OpenVINO
+model:
+  model_type: yolo-generic
+  width: 640
+  height: 640
+  input_tensor: nchw
+  input_dtype: float
+  path: /config/model_cache/yolov9-t-converted.onnx
+  labelmap_path: /labelmap/coco-80.txt
+
 # Authentication configuration
 # Password reset completed - admin password is now available
 
-# Detectors configuration (using CPU by default)
+# Detectors configuration (using OpenVINO with YOLOv9-T for Intel CPU)
 detectors:
-  cpu1:
-    type: cpu
-    num_threads: 3
+  ov:
+    type: openvino
+    device: CPU
 
 # Objects to detect
 objects:
