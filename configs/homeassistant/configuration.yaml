@@ -17,16 +17,10 @@ lovelace:
   dashboards:
     working-cameras:
       mode: yaml
-      title: Live Cameras
+      title: Security Cameras
       icon: mdi:camera
       show_in_sidebar: true
       filename: dashboards/working_cameras.yaml
-    security-dashboard:
-      mode: yaml  
-      title: Security Dashboard
-      icon: mdi:shield-home
-      show_in_sidebar: true
-      filename: dashboards/security_dashboard.yaml
 
 # Enable media source for Frigate Media Browser
 media_source:

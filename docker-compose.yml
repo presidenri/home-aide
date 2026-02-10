@@ -49,6 +49,9 @@ services:
         target: /tmp/cache
         tmpfs:
           size: 1000000000
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+      - /usr/lib/wsl:/usr/lib/wsl
     ports:
       - "8971:8971"
       - "8554:8554" # RTSP feeds
@@ -58,13 +61,23 @@ services:
       - FRIGATE_CAMERA_USERNAME=${FRIGATE_CAMERA_USERNAME}
       - FRIGATE_CAMERA_PASSWORD=${FRIGATE_CAMERA_PASSWORD}
       - FRIGATE_CAMERA_IP=${FRIGATE_CAMERA_IP}
+      - GALLIUM_DRIVER=d3d12
+      - LIBVA_DRIVER_NAME=d3d12
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+      - DISPLAY=$DISPLAY
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - PULSE_SERVER=$PULSE_SERVER
+      - WAYLAND_DISPLAY=$WAYLAND_DISPLAY
     depends_on:
       - mqtt
     networks:
       - frigate-network
     # Uncomment for hardware acceleration
-    # devices:
-    #   - /dev/dri:/dev/dri # Intel GPU
+    devices:
+      - /dev/dri:/dev/dri # Intel GPU
+      - /dev/dxg:/dev/dxg # Windows GPU
+      - /dev/dri/card0:/dev/dri/card0 # Intel GPU primary node
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Intel GPU render node
     #   - /dev/apex_0:/dev/apex_0 # Google Coral TPU
     # privileged: true # Required for some hardware acceleration
 

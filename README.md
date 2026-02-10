@@ -606,38 +606,6 @@ record:
 
 *Based on Intel i5/i7 CPU with OpenVINO, 640x360 detection streams at 5 FPS*
 
-## 🎯 Features & Capabilities
-
-### Object Detection
-- **Supported Objects**: Person, car, bicycle, motorcycle, bus, cat, dog
-- **Detection Zones**: Define areas for targeted monitoring
-- **Motion Masks**: Ignore areas with false triggers (trees, flags)
-- **Confidence Thresholds**: Configurable per object type
-- **Size Filters**: Min/max area to reduce false positives
-
-### Recording Features
-- **24/7 Recording**: Continuous recording with motion-based retention
-- **Event Clips**: Automatic clips for detected events
-- **Snapshots**: Still images with bounding boxes
-- **Retention Policies**: 14-day default (configurable)
-- **Export**: Download clips and snapshots via web UI
-
-### Home Assistant Integration
-- **Camera Entities**: Live feeds in HA dashboards
-- **Binary Sensors**: Person/object occupancy sensors
-- **Switches**: Enable/disable detection per camera
-- **Events**: Real-time detection events for automations
-- **Services**: Trigger recordings, snapshots, clips
-- **Statistics**: Detection counts, camera stats
-
-### Web Interface Features
-- **Live View**: Real-time streams from all cameras
-- **Timeline**: Visual timeline of events and recordings
-- **Events Browser**: Search and filter detection events
-- **System Stats**: CPU, GPU, detector performance
-- **Configuration**: Live config validation and reload
-- **Debug View**: Frame-by-frame detection visualization
-
 ## 🔐 Security Considerations
 
 ### Production Deployment Checklist

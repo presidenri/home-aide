@@ -26,8 +26,10 @@ model:
   path: /config/model_cache/yolov9-t-converted.onnx
   labelmap_path: /labelmap/coco-80.txt
 
-# Authentication configuration
-# Password reset completed - admin password is now available
+ffmpeg:
+  hwaccel_args:
+    -hwaccel vaapi
+    -hwaccel_device /dev/dri/card0
 
 # Detectors configuration (using OpenVINO with YOLOv9-T for Intel CPU)
 detectors:
@@ -41,10 +43,10 @@ objects:
   track:
     - person
     - car
-    - bicycle
     - motorcycle
-    - cat
-    - dog
+    - bicycle
+    # - cat
+    # - dog
   filters:
     person:
       min_score: 0.70  # Increased from 0.65 to reduce false positives
@@ -56,21 +58,21 @@ objects:
       min_score: 0.65
       threshold: 0.75
       min_area: 10000  # Cars are typically larger in frame
-    bicycle:
-      min_score: 0.7
-      threshold: 0.85  # Reduced from 0.9 for better detection
     motorcycle:
       min_score: 0.7
       threshold: 0.75
-    dog:
-      min_score: 0.75  # Increased from 0.7
-      threshold: 0.92  # Increased from 0.9 for even stricter detection
-      max_ratio: 2.0   # Dogs are generally wider than people (height/width)
-      min_area: 3000   # Reasonable minimum size
-    cat:
-      min_score: 0.70  # Increased from 0.65
-      threshold: 0.92  # Increased to match dog strictness
-      max_ratio: 2.0   # Similar to dog
+    bicycle:
+      min_score: 0.7
+      threshold: 0.85  # Reduced from 0.9 for better detection
+    # dog:
+    #   min_score: 0.75  # Increased from 0.7
+    #   threshold: 0.92  # Increased from 0.9 for even stricter detection
+    #   max_ratio: 2.0   # Dogs are generally wider than people (height/width)
+    #   min_area: 3000   # Reasonable minimum size
+    # cat:
+    #   min_score: 0.70  # Increased from 0.65
+    #   threshold: 0.92  # Increased to match dog strictness
+    #   max_ratio: 2.0   # Similar to dog
 
 # Recording configuration
 record:
@@ -115,16 +117,16 @@ cameras:
     detect:
       width: 640    # Sub stream actual resolution
       height: 360
-      fps: 3  # Reduced from 5 to lower CPU load (every ~333ms)
+      fps: 5
       stationary:
         interval: 50  # Only run object detection on every 50th frame for stationary objects
         threshold: 100  # Frames before considering object stationary
     motion:
       enabled: true
-      threshold: 30  # Increase to reduce false motion triggers (default: 25)
-      lightning_threshold: 0.8  # Ignore lightning flashes
-      contour_area: 50  # Minimum area in pixels for motion detection
-      improve_contrast: false  # Disable to save CPU (static outdoor scene)
+      # threshold: 30  # Increase to reduce false motion triggers (default: 25)
+      # lightning_threshold: 0.8  # Ignore lightning flashes
+      # contour_area: 50  # Minimum area in pixels for motion detection
+      # improve_contrast: false  # Disable to save CPU (static outdoor scene)
     zones:
       # Define detection zones (adjust coordinates based on your camera view)
       main_area:
