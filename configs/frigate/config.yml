@@ -49,20 +49,16 @@ objects:
     # - dog
   filters:
     person:
-      min_score: 0.70  # Increased from 0.65 to reduce false positives
+      min_score: 0.65  # Increased from 0.65 to reduce false positives
       threshold: 0.75
-      min_ratio: 0.3   # People are typically taller than wide (height/width)
-      max_ratio: 3.5   # Prevents very thin detections
-      min_area: 5000   # Minimum pixel area to avoid tiny false detections
     car:
       min_score: 0.65
       threshold: 0.75
-      min_area: 10000  # Cars are typically larger in frame
     motorcycle:
-      min_score: 0.7
+      min_score: 0.65
       threshold: 0.75
     bicycle:
-      min_score: 0.7
+      min_score: 0.65
       threshold: 0.85  # Reduced from 0.9 for better detection
     # dog:
     #   min_score: 0.75  # Increased from 0.7
@@ -118,24 +114,24 @@ cameras:
       width: 640    # Sub stream actual resolution
       height: 360
       fps: 5
-      stationary:
-        interval: 50  # Only run object detection on every 50th frame for stationary objects
-        threshold: 100  # Frames before considering object stationary
+      # stationary:
+      #   interval: 50  # Only run object detection on every 50th frame for stationary objects
+      #   threshold: 100  # Frames before considering object stationary
     motion:
       enabled: true
       # threshold: 30  # Increase to reduce false motion triggers (default: 25)
       # lightning_threshold: 0.8  # Ignore lightning flashes
       # contour_area: 50  # Minimum area in pixels for motion detection
       # improve_contrast: false  # Disable to save CPU (static outdoor scene)
-    zones:
-      # Define detection zones (adjust coordinates based on your camera view)
-      main_area:
-        coordinates: 50,50,590,50,590,310,50,310
-        objects:
-          - person
-          - car
-          - bicycle
-          - motorcycle
+    # zones:
+    #   # Define detection zones (adjust coordinates based on your camera view)
+    #   main_area:
+    #     coordinates: 50,50,590,50,590,310,50,310
+    #     objects:
+    #       - person
+    #       - car
+    #       - bicycle
+    #       - motorcycle
     # Optional: Add motion masks later if needed to ignore areas like trees, flags, etc.
     # motion:
     #   mask:

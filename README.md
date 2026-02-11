@@ -153,11 +153,11 @@ The system is currently configured with:
 - **Camera**: Hikvison DS-2CD2387G3-LI2UY (8MP/4K)
   - Main stream: 4K UHD for high-quality recording
   - Sub stream: 640x360 for efficient AI detection
-  - Detection zone: Main area covering front view
   - Objects tracked: Person, car, bicycle, motorcycle
 - **AI Model**: YOLOv9-T optimized for Intel CPUs via OpenVINO
 - **Storage**: Network storage mounted at `/mnt/unas2/frigate` for recordings
 - **Retention**: 14 days for recordings, detections, and snapshots
+- **Hardware Acceleration**: Intel GPU with OpenVINO (active)
 
 ### Adding Additional Cameras
 
@@ -179,35 +179,9 @@ cameras:
       width: 640
       height: 360
       fps: 5
-    zones:
-      entry_area:
-        coordinates: 100,100,600,100,600,300,100,300
-        objects:
-          - person
-          - car
 ```
 
 **Tip**: Use the Frigate web UI at http://localhost:8971 to visually define detection zones by clicking on the camera feed.
-
-### Home Assistant Dashboards
-
-Pre-configured dashboards available in [configs/homeassistant/dashboards/](configs/homeassistant/dashboards/):
-- **security_dashboard.yaml**: Main security overview with live feeds and detection status  
-- **simple_cameras.yaml**: Basic camera grid view
-- **working_cameras.yaml**: Troubleshooting dashboard
-
-To add a dashboard:
-1. Copy dashboard YAML from the `dashboards/` folder
-2. In Home Assistant, go to Settings → Dashboards → Add Dashboard
-3. Choose "Show in sidebar" and paste the YAML content
-
-### Automations
-
-Example automations are provided in [configs/homeassistant/automations.yaml](configs/homeassistant/automations.yaml). Blueprint templates are available in [configs/homeassistant/blueprints/](configs/homeassistant/blueprints/) for:
-- **Motion-activated lights**: Turn on lights when person detected
-- **Person detection notifications**: Get alerts on phone when people detected 
-- **Zone departure alerts**: Know when someone leaves a specific area
-- **Confirmable notifications**: Interactive alerts with action buttons
 
 ### Cloudflare Tunnel Setup
 
@@ -287,59 +261,6 @@ All services communicate via a dedicated Docker network (`frigate-network`) with
 
 ### Current Setup: OpenVINO (Active)
 The system currently uses Intel OpenVINO for CPU-accelerated AI inference, providing efficient object detection without dedicated GPU hardware.
-
-### Upgrade Options
-
-For even better performance with multiple cameras, you can enable GPU acceleration:
-
-#### Intel GPU (Integrated or Arc)
-Uncomment in [docker-compose.yml](docker-compose.yml):
-```yaml
-devices:
-  - /dev/dri:/dev/dri
-```
-
-Then update [configs/frigate/config.yml](configs/frigate/config.yml):
-```yaml
-detectors:
-  ov:
-    type: openvino
-    device: GPU
-```
-
-#### NVIDIA GPU (TensorRT)
-Uncomment in [docker-compose.yml](docker-compose.yml):
-```yaml
-runtime: nvidia
-environment:
-  - NVIDIA_VISIBLE_DEVICES=all
-```
-
-Update detector configuration:
-```yaml
-detectors:
-  tensorrt:
-    type: tensorrt
-    device: 0
-```
-
-#### Google Coral TPU
-Uncomment in [docker-compose.yml](docker-compose.yml):
-```yaml
-devices:
-  - /dev/apex_0:/dev/apex_0
-privileged: true
-```
-
-Update detector configuration:
-```yaml
-detectors:
-  coral:
-    type: edgetpu
-    device: usb
-```
-
-**Note**: GPU/TPU acceleration can process 5-10x more FPS compared to CPU, enabling support for many more cameras.
 
 ## 🔧 Troubleshooting
 
@@ -452,12 +373,6 @@ Create in [configs/homeassistant/automations.yaml](configs/homeassistant/automat
         title: Security Alert
 ```
 
-### Using Blueprints
-
-1. Find blueprint in [configs/homeassistant/blueprints/automation/](configs/homeassistant/blueprints/automation/)
-2. In Home Assistant: Settings → Automations → Create Automation → Use Blueprint
-3. Select blueprint and configure parameters
-
 ### Environment Variables
 
 Key variables in `.env`:
@@ -475,41 +390,6 @@ FRIGATE_RTSP_PASSWORD=your-rtsp-password
 
 # Cloudflare Tunnel (optional)
 CLOUDFLARE_TUNNEL_TOKEN=your-tunnel-token
-```
-
-### Testing Changes
-
-**Test camera streams:**
-```bash
-# Using ffprobe
-ffprobe -rtsp_transport tcp "rtsp://user:pass@ip:554/stream"
-
-# Using ffplay (visual test)
-ffplay -rtsp_transport tcp "rtsp://user:pass@ip:554/stream"
-
-# Using Frigate's debug endpoint
-curl http://localhost:8971/api/config
-```
-
-**Test MQTT:**
-```bash
-# Subscribe to Frigate events
-docker compose exec mqtt mosquitto_sub -t "frigate/#" -v
-
-# Publish test message
-docker compose exec mqtt mosquitto_pub -t "frigate/test" -m "hello"
-```
-
-**Test Home Assistant API:**
-```bash
-# Get state of camera entity
-curl http://localhost:8123/api/states/camera.hikvision_outdoor
-
-# Trigger automation (requires long-lived token)
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"entity_id": "automation.person_detected"}' \
-     http://localhost:8123/api/services/automation/trigger
 ```
 
 ### Backup & Restore
@@ -531,69 +411,6 @@ tar -xzf backup-20260208.tar.gz
 # Restart services
 docker compose restart
 ```
-
-### Debugging Tips
-
-- **Enable debug logging in Frigate**: Add to config.yml:
-  ```yaml
-  logger:
-    default: info
-    logs:
-      frigate.record: debug
-  ```
-- **Home Assistant logs**: Available at http://localhost:8123/config/logs
-- **Live camera debug**: Frigate UI → Camera → Debug
-- **MQTT traffic**: Use MQTT Explorer or `mosquitto_sub -t "#" -v`
-
-## ⚡ Performance & Optimization
-
-### Current Performance Metrics
-
-The system is optimized for efficient operation:
-- **Detection Inference**: ~50-100ms per frame with OpenVINO on CPU
-- **Detection FPS**: 5 FPS (configurable, balanced for CPU usage)
-- **Recording Resolution**: 4K UHD (3840x2160) main stream
-- **Detection Resolution**: 640x360 sub stream (reduces processing load)
-- **Memory Usage**: ~1GB tmpfs cache for optimal performance
-- **Storage**: Dual-tier (SSD for config/DB, network storage for recordings)
-
-### Optimization Tips
-
-**Reduce CPU usage:**
-```yaml
-# In configs/frigate/config.yml
-cameras:
-  your_camera:
-    detect:
-      fps: 5          # Lower FPS = less CPU (5 is already optimal)
-    motion:
-      mask:           # Ignore high-motion areas
-        - 0,0,100,100,100,0  # Trees, flags, etc.
-```
-
-**Improve detection accuracy:**
-```yaml
-objects:
-  filters:
-    person:
-      min_area: 5000      # Adjust based on camera distance
-      max_area: 100000    # Prevent detecting entire screen
-      threshold: 0.7      # Higher = fewer false positives
-```
-
-**Optimize storage:**
-```yaml
-record:
-  retain:
-    days: 7             # Reduce from 14 if storage limited
-    mode: motion        # Only keep motion segments (not 24/7)
-```
-
-**Multi-camera considerations:**
-- Each camera adds ~10-20% CPU usage (detect stream)
-- Use sub-streams for all cameras (640x360 or similar)
-- Consider GPU acceleration for 4+ cameras
-- Limit detection zones to areas of interest
 
 ### Resource Requirements by Camera Count
 
