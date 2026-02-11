@@ -59,9 +59,9 @@ views:
           
           ### 🔧 Common Entity Names
           Expected entities (check in HA if they exist):
-          - `camera.hikvision_outdoor` (live camera feed)
-          - `binary_sensor.hikvision_outdoor_person_occupancy` (person detection)
-          - `switch.hikvision_outdoor_detect` (detection control)
+          - `camera.home_garage_main` (live camera feed)
+          - `binary_sensor.home_garage_main_person_occupancy` (person detection)
+          - `switch.home_garage_main_detect` (detection control)
 
       # System links
       - type: markdown

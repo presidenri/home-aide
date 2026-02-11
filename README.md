@@ -359,7 +359,7 @@ Create in [configs/homeassistant/automations.yaml](configs/homeassistant/automat
   alias: Person Detected at Night
   trigger:
     - platform: state
-      entity_id: binary_sensor.hikvision_outdoor_person_occupancy
+      entity_id: binary_sensor.home_garage_main_person_occupancy
       to: 'on'
   condition:
     - condition: sun

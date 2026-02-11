@@ -88,25 +88,29 @@ snapshots:
   bounding_box: true
   retain:
     default: 14
-
-# Live view configuration
-live:
-  height: 720
-  quality: 8
+    
+# go2rtc configuration for WebRTC streaming
+go2rtc:
+  streams:
+    # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
+    home_garage_main:
+      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+    home_garage_sub:
+      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
 
 # Cameras configuration
 cameras:
-  # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
-  hikvision_outdoor:
+  home_garage_main:
     enabled: true   # Camera is now configured and tested
     ffmpeg:
       inputs:
         # Main stream for recording (4K UHD)
-        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+        - path: rtsp://127.0.0.1:8554/home_garage_main
+          input_args: preset-rtsp-restream
           roles:
             - record
         # Sub stream for detection (lower bandwidth, optimized for CPU)
-        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
+        - path: rtsp://127.0.0.1:8554/home_garage_sub
           input_args: preset-rtsp-restream
           roles:
             - detect
@@ -119,6 +123,7 @@ cameras:
       #   threshold: 100  # Frames before considering object stationary
     motion:
       enabled: true
+      # Optional: Advanced motion settings
       # threshold: 30  # Increase to reduce false motion triggers (default: 25)
       # lightning_threshold: 0.8  # Ignore lightning flashes
       # contour_area: 50  # Minimum area in pixels for motion detection

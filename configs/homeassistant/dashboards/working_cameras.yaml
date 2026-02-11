@@ -7,7 +7,7 @@ views:
     cards:
       # Try to show the camera entity (will show if it exists)
       - type: picture-entity
-        entity: camera.hikvision_outdoor
+        entity: camera.home_garage_main
         name: "Outdoor Camera"
         show_state: false
         show_name: true
@@ -16,9 +16,9 @@ views:
       - type: entities
         title: "Detection Status"
         entities:
-          - entity: binary_sensor.hikvision_outdoor_person_occupancy
+          - entity: binary_sensor.home_garage_main_person_occupancy
             name: "Person Detected"
-          - entity: binary_sensor.hikvision_outdoor_all_occupancy
+          - entity: binary_sensor.home_garage_main_all_occupancy
             name: "Motion Detected"
         show_header_toggle: false
         
@@ -26,9 +26,9 @@ views:
       - type: entities
         title: "Camera Controls"
         entities:
-          - entity: switch.hikvision_outdoor_detect
+          - entity: switch.home_garage_main_detect
             name: "Detection Enabled"
-          - entity: switch.hikvision_outdoor_recordings
+          - entity: switch.home_garage_main_recordings
             name: "Recording Enabled"
         show_header_toggle: false
         
@@ -40,18 +40,18 @@ views:
       - type: glance
         title: "Current Status"
         entities:
-          - entity: binary_sensor.hikvision_outdoor_person_occupancy
+          - entity: binary_sensor.home_garage_main_person_occupancy
             name: "Person"
-          - entity: camera.hikvision_outdoor
+          - entity: camera.home_garage_main
             name: "Camera"
             
       # System info
       - type: entities
         title: "Camera Performance"  
         entities:
-          - entity: sensor.hikvision_outdoor_camera_fps
+          - entity: sensor.home_garage_main_camera_fps
             name: "Camera FPS"
-          - entity: sensor.hikvision_outdoor_detection_fps  
+          - entity: sensor.home_garage_main_detection_fps  
             name: "Detection FPS"
         show_header_toggle: false
         
@@ -74,10 +74,10 @@ views:
           
           ### 📊 Entity Status
           Check **Developer Tools** → **States** for:
-          - `camera.hikvision_outdoor`
-          - `binary_sensor.hikvision_outdoor_*`  
-          - `sensor.hikvision_outdoor_*`
-          - `switch.hikvision_outdoor_*`
+          - `camera.home_garage_main`
+          - `binary_sensor.home_garage_main_*`  
+          - `sensor.home_garage_main_*`
+          - `switch.home_garage_main_*`
           
           If entities show as "unavailable", check:
           1. Frigate is running: `docker compose logs frigate`

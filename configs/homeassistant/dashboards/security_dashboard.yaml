@@ -7,7 +7,7 @@ views:
       # Main camera feed
       - type: picture-entity
         title: "Outdoor Camera - Live View"
-        entity: camera.hikvision_outdoor
+        entity: camera.home_garage_main
         camera_view: live
         show_state: false
         show_name: true
@@ -17,17 +17,17 @@ views:
         title: "Detection Status"
         show_header_toggle: false
         entities:
-          - entity: binary_sensor.hikvision_outdoor_person_occupancy
+          - entity: binary_sensor.home_garage_main_person_occupancy
             name: "Person Detected"
-          - entity: binary_sensor.hikvision_outdoor_all_occupancy
+          - entity: binary_sensor.home_garage_main_all_occupancy
             name: "Motion Detected"
-          - entity: switch.hikvision_outdoor_detect
+          - entity: switch.home_garage_main_detect
             name: "Detection Enabled"
             
       # Advanced Camera Card - Live View
       - type: custom:advanced-camera-card
         cameras:
-          - camera_entity: camera.hikvision_outdoor
+          - camera_entity: camera.home_garage_main
             title: "Outdoor Camera"
         view:
           default: live
@@ -58,7 +58,7 @@ views:
       # Advanced Camera Card - Events Timeline
       - type: custom:advanced-camera-card
         cameras:
-          - camera_entity: camera.hikvision_outdoor
+          - camera_entity: camera.home_garage_main
             title: "Event Timeline" 
         view:
           default: clips
@@ -80,8 +80,8 @@ views:
       - type: history-graph
         title: "Detection History"
         entities:
-          - binary_sensor.hikvision_outdoor_person_occupancy
-          - binary_sensor.hikvision_outdoor_all_occupancy
+          - binary_sensor.home_garage_main_person_occupancy
+          - binary_sensor.home_garage_main_all_occupancy
         hours_to_show: 24
         refresh_interval: 30
 
@@ -94,11 +94,11 @@ views:
         title: "Camera Performance"
         show_header_toggle: false
         entities:
-          - entity: sensor.hikvision_outdoor_camera_fps
+          - entity: sensor.home_garage_main_camera_fps
             name: "Camera FPS"
-          - entity: sensor.hikvision_outdoor_detection_fps
+          - entity: sensor.home_garage_main_detection_fps
             name: "Detection FPS"
-          - entity: switch.hikvision_outdoor_recordings
+          - entity: switch.home_garage_main_recordings
             name: "Recording Enabled"
             
       # System Access
