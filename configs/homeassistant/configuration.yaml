@@ -15,12 +15,12 @@ config:
 lovelace:
   mode: storage
   dashboards:
-    working-cameras:
+    home-cameras:
       mode: yaml
-      title: Security Cameras
+      title: Home Cameras
       icon: mdi:camera
       show_in_sidebar: true
-      filename: dashboards/working_cameras.yaml
+      filename: dashboards/home_cameras.yaml
 
 # Enable media source for Frigate Media Browser
 media_source:

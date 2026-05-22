@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-05-22
+
+### Added
+- TP-Link Tapo C319 4MP camera support with dual-stream configuration
+- License plate recognition (LPR) with YOLOv9 license plate model
+- PaddleOCR models for text detection and recognition
+- Semantic search capability (disabled by default)
+- Face recognition support (disabled by default)
+- Bird classification support (disabled by default)
+- Timestamp overlay configuration (`timestamp_style` format)
+- Unified `home_cameras.yaml` dashboard for all camera feeds
+- Multi-camera environment variable structure (HIKVISION1, TAPO1 prefixes)
+
+### Changed
+- **BREAKING**: Upgraded Frigate from v0.16 to v0.17
+- **BREAKING**: Restructured recording configuration with new keys:
+  - `record.alerts.retain` for alert retention
+  - `record.detections.retain` for detection retention  
+  - `record.continuous` for 24/7 recording
+  - `record.motion` for motion-based recording
+- **BREAKING**: Environment variable naming scheme updated:
+  - `FRIGATE_CAMERA_USERNAME` → `FRIGATE_HIKVISION1_CAMUSER`
+  - `FRIGATE_CAMERA_PASSWORD` → `FRIGATE_HIKVISION1_CAMPASS`
+  - `FRIGATE_CAMERA_IP` → `FRIGATE_HIKVISION1_CAMIP`
+- Upgraded Home Assistant from `stable` to version `2026.5`
+- Improved bicycle detection threshold from 0.90 to 0.85
+- Consolidated all camera dashboards into single `home_cameras` dashboard
+- Dashboard title changed from "Security Cameras" to "Home Cameras"
+- OpenVINO thread limit reduced to 2 for better CPU efficiency
+
+### Removed
+- `security_dashboard.yaml` - replaced by unified dashboard
+- `simple_cameras.yaml` - replaced by unified dashboard
+- `working_cameras.yaml` - replaced by unified dashboard
+- Continuous recording (set to 0 days retention)
+- Tracked objects: `dog` and `cat` (disabled in current config)
+
+### Fixed
+- SQLite database locking issues with network storage paths
+- VAAPI hardware acceleration configuration format
+- Recording retention policy structure for Frigate v0.17 compatibility
+
+### Performance
+- Motion-based recording reduces storage usage compared to continuous recording
+- Optimized dual-camera setup with efficient stream reuse via go2rtc
+- VAAPI hardware acceleration for ffmpeg operations
+
+### Security
+- Multi-camera credential isolation with separate environment variables per camera
+
 ## [1.1.0] - 2026-02-09
 
 ### Added
@@ -78,5 +128,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Security` for vulnerability fixes
 - `Performance` for performance improvements
 
-[1.1.0]: https://github.com/yourusername/home-aide/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/yourusername/home-aide/releases/tag/v1.0.0
+[2.0.0]: https://github.com/presidenri/home-aide/compare/v1.1.0...v2.0.0
+[1.1.0]: https://github.com/presidenri/home-aide/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/presidenri/home-aide/releases/tag/v1.0.0
