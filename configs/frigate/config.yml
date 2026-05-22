@@ -12,6 +12,10 @@ mqtt:
   client_id: frigate
   stats_interval: 60
 
+# in-feed timestamp style configuration
+timestamp_style:
+  format: '%Y-%m-%d %H:%M:%S'
+
 # Database configuration - keep local to avoid SQLite locking on network storage
 database:
   path: /config/frigate.db
@@ -27,9 +31,7 @@ model:
   labelmap_path: /labelmap/coco-80.txt
 
 ffmpeg:
-  hwaccel_args:
-    -hwaccel vaapi
-    -hwaccel_device /dev/dri/card0
+  hwaccel_args: -hwaccel vaapi -hwaccel_device /dev/dri/card0
 
 # Detectors configuration (using OpenVINO with YOLOv9-T for Intel CPU)
 detectors:
@@ -73,30 +75,36 @@ objects:
 # Recording configuration
 record:
   enabled: true
-  retain:
-    days: 14
-    mode: motion
   alerts:
     retain:
       days: 14
   detections:
     retain:
       days: 14
+  continuous:
+    days: 0
+  motion:
+    days: 14
 snapshots:
   enabled: true
   timestamp: false
   bounding_box: true
   retain:
     default: 14
-    
+
 # go2rtc configuration for WebRTC streaming
 go2rtc:
   streams:
     # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
     home_garage_main:
-      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+      - rtsp://{FRIGATE_HIKVISION1_CAMUSER}:{FRIGATE_HIKVISION1_CAMPASS}@{FRIGATE_HIKVISION1_CAMIP}:554/Streaming/Channels/101
     home_garage_sub:
-      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
+      - rtsp://{FRIGATE_HIKVISION1_CAMUSER}:{FRIGATE_HIKVISION1_CAMPASS}@{FRIGATE_HIKVISION1_CAMIP}:554/Streaming/Channels/102
+    # TP-Link Tapo C319 4MP Camera
+    c319_garage_main:
+      - rtsp://{FRIGATE_TAPO1_CAMUSER}:{FRIGATE_TAPO1_CAMPASS}@{FRIGATE_TAPO1_CAMIP}:554/stream1
+    c319_garage_sub:
+      - rtsp://{FRIGATE_TAPO1_CAMUSER}:{FRIGATE_TAPO1_CAMPASS}@{FRIGATE_TAPO1_CAMIP}:554/stream2
 
 # Cameras configuration
 cameras:
@@ -141,6 +149,38 @@ cameras:
     # motion:
     #   mask:
     #     - 0,0,100,0,100,50,0,50  # Example: ignore top-left corner
+  c319_garage_main:
+    enabled: true   # Camera is now configured and tested
+    ffmpeg:
+      inputs:
+        # Main stream for recording (4MP)
+        - path: rtsp://127.0.0.1:8554/c319_garage_main
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        # Sub stream for detection (lower bandwidth, optimized for CPU)
+        - path: rtsp://127.0.0.1:8554/c319_garage_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      width: 640    # Sub stream actual resolution
+      height: 360
+      fps: 5
+    motion:
+      enabled: true
+
 detect:
   enabled: true
-version: 0.16-0
+version: 0.17-0
+semantic_search:
+  enabled: false
+  model_size: small
+face_recognition:
+  enabled: false
+  model_size: small
+lpr:
+  enabled: true
+classification:
+  bird:
+    enabled: false

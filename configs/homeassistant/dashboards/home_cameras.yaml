@@ -1,0 +1,96 @@
+# Working Camera Dashboard with actual entity names
+title: Live Cameras
+views:
+  - title: Camera Feed  
+    path: live
+    icon: mdi:video
+    cards:
+      # C3-01 Garage Camera Controls
+      - type: entities
+        title: "C3-01 Garage Camera Controls"
+        entities:
+          - entity: switch.home_garage_main_detect
+            name: "Detection Enabled"
+          - entity: switch.home_garage_main_recordings
+            name: "Recording Enabled"
+        show_header_toggle: false
+
+      # C3-01 Garage Camera
+      - type: picture-entity
+        entity: camera.home_garage_main
+        name: "C3-01 Camera - Garage - Live"
+        show_state: false
+        show_name: true
+
+      # C3-01 Side Balcony Camera Controls
+      - type: entities
+        title: "C3-01 Side Balcony Camera Controls"
+        entities:
+          - entity: switch.c319_garage_main_detect
+            name: "Detection Enabled"
+          - entity: switch.c319_garage_main_recordings
+            name: "Recording Enabled"
+        show_header_toggle: false
+
+      # C3-01 Side Balcony Camera
+      - type: picture-entity
+        entity: camera.c319_garage_main
+        name: "C3-01 Camera - Side Balcony - Live"
+        show_state: false
+        show_name: true
+
+  - title: Activity
+    path: activity
+    icon: mdi:motion-sensor
+    cards:
+      # Status overview
+      - type: glance
+        title: "C3-01 Garage Latest Status"
+        entities:
+          # Latest person snapshot
+          - entity: image.home_garage_main_person
+            name: "Person at C3-01 Garage"
+          # Latest car snapshot
+          - entity: image.home_garage_main_car
+            name: "Car at C3-01 Garage"
+          # Latest motorcycle snapshot
+          - entity: image.home_garage_main_motorcycle
+            name: "Motorcycle at C3-01 Garage"
+          # Latest bicycle snapshot
+          - entity: image.home_garage_main_bicycle
+            name: "Bicycle at C3-01 Garage"
+          # Motion detection status
+          - entity: binary_sensor.home_garage_main_motion
+            name: "Motion Detected - C3-01 Garage"
+        show_name: true
+
+      - type: glance
+        title: "C3-01 Side Balcony Latest Status"
+        entities:
+          # Latest person snapshot
+          - entity: image.c319_garage_main_person
+            name: "Person at C3-01 Side Balcony"
+          # Latest car snapshot
+          - entity: image.c319_garage_main_car
+            name: "Car at C3-01 Side Balcony"
+          # Latest motorcycle snapshot
+          - entity: image.c319_garage_main_motorcycle
+            name: "Motorcycle at C3-01 Side Balcony"
+          # Latest bicycle snapshot
+          - entity: image.c319_garage_main_bicycle
+            name: "Bicycle at C3-01 Side Balcony"
+          # Motion detection status
+          - entity: binary_sensor.c319_garage_main_motion
+            name: "Motion Detected - C3-01 Side Balcony"
+        show_name: true
+            
+      # System info
+      - type: entities
+        title: "NVR Performance"
+        entities:
+          - entity: sensor.frigate_detection_fps
+            name: "Object Detection FPS"
+          - entity: sensor.frigate_ov_inference_speed
+            name: "OpenVINO Inference Speed (ms)"
+        show_header_toggle: false
+  

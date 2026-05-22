@@ -2,7 +2,7 @@ services:
   # Home Assistant - main home automation hub
   homeassistant:
     container_name: homeassistant
-    image: ghcr.io/home-assistant/home-assistant:stable
+    image: ghcr.io/home-assistant/home-assistant:2026.5
     restart: unless-stopped
     ports:
       - "8123:8123"
@@ -41,7 +41,8 @@ services:
     container_name: frigate
     restart: unless-stopped
     stop_grace_period: 30s
-    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "138mb" # Increase shared memory for better performance
+    image: ghcr.io/blakeblackshear/frigate:0.17.1
     volumes:
       - ./configs/frigate:/config # Config and database (local)
       - /mnt/unas2/frigate:/media/frigate # Recordings (network storage)
@@ -52,15 +53,19 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /mnt/wslg:/mnt/wslg
       - /usr/lib/wsl:/usr/lib/wsl
+      # - /dev/shm:/dev/shm
     ports:
       - "8971:8971"
       - "8554:8554" # RTSP feeds
     environment:
       - FRIGATE_RTSP_PASSWORD=${FRIGATE_RTSP_PASSWORD:-password}
       - TZ=${TZ:-America/New_York}
-      - FRIGATE_CAMERA_USERNAME=${FRIGATE_CAMERA_USERNAME}
-      - FRIGATE_CAMERA_PASSWORD=${FRIGATE_CAMERA_PASSWORD}
-      - FRIGATE_CAMERA_IP=${FRIGATE_CAMERA_IP}
+      - FRIGATE_HIKVISION1_CAMUSER=${FRIGATE_HIKVISION1_CAMUSER}
+      - FRIGATE_HIKVISION1_CAMPASS=${FRIGATE_HIKVISION1_CAMPASS}
+      - FRIGATE_HIKVISION1_CAMIP=${FRIGATE_HIKVISION1_CAMIP}
+      - FRIGATE_TAPO1_CAMUSER=${FRIGATE_TAPO1_CAMUSER}
+      - FRIGATE_TAPO1_CAMIP=${FRIGATE_TAPO1_CAMIP}
+      - FRIGATE_TAPO1_CAMPASS=${FRIGATE_TAPO1_CAMPASS}
       - GALLIUM_DRIVER=d3d12
       - LIBVA_DRIVER_NAME=d3d12
       - LD_LIBRARY_PATH=/usr/lib/wsl/lib
