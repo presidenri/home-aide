@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Upgraded Frigate from 0.17.1 to 0.18.2 (includes 0.18.1/0.18.2 security fixes); config migrated to `version: 0.18-0`
+- Upgraded Home Assistant from 2026.5 to 2026.10.4
+- Frigate's auto-downloaded LPR and PaddleOCR models and runtime files (`backup_config.yaml`, `.search_stats.json`, `go2rtc_homekit.yml`) are no longer tracked in git
+
+### Fixed
+- `.env.example` and README now use the per-camera variables (`FRIGATE_HIKVISION1_*`, `FRIGATE_TAPO1_*`) introduced in 2.0.0
+- README now documents the Tapo C319 camera, go2rtc restreaming, LPR, pinned image versions and the WSL2 VAAPI setup
+- Removed README table-of-contents links to sections that no longer exist
+- Automation examples updated to current Home Assistant syntax (`triggers`/`actions`)
+
 ## [2.0.0] - 2026-05-22
 
 ### Added

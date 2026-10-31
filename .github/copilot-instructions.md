@@ -7,34 +7,38 @@ This is a complete **Home Assistant + Frigate NVR** setup using Docker Compose. 
 
 ### Docker Services
 - **homeassistant**: Main home automation hub
-  - Image: `ghcr.io/home-assistant/home-assistant:stable`
+  - Image: `ghcr.io/home-assistant/home-assistant:2026.10.4`
   - Web UI: Port `8123`
   - Manages automations, integrations, and device control
 - **frigate**: AI-powered NVR service
-  - Image: `ghcr.io/blakeblackshear/frigate:stable`
+  - Image: `ghcr.io/blakeblackshear/frigate:0.18.2`
   - Web UI: Port `8971`
   - RTSP streams: Port `8554`
   - Uses tmpfs cache (1GB) to reduce storage wear
+  - Cameras: `home_garage_main` (Hikvision 8MP) and `c319_garage_main` (Tapo C319), each pulled once by go2rtc and read by Frigate from `rtsp://127.0.0.1:8554/<stream>`
+  - Detector: OpenVINO with `model_cache/yolov9-t-converted.onnx`; LPR enabled (its models are auto-downloaded and gitignored)
 - **mqtt**: Mosquitto MQTT broker for inter-service communication
   - Port `1883` (MQTT), `9001` (WebSocket)
   - Enables real-time communication between services
+- **cloudflared**: Cloudflare Tunnel for remote access to Home Assistant (token from `CLOUDFLARE_TUNNEL_TOKEN`)
 
 ### Directory Structure
 - `configs/`: Configuration files for all services
   - `frigate/`: Frigate NVR configuration files
     - `config.yml`: Main Frigate configuration with MQTT, detectors, objects, and recording settings
-    - `backup_config.yaml`: Backup configuration file
+    - `backup_config.yaml`, `frigate.db*`, `.jwt_secret`, etc.: written by Frigate at runtime (gitignored)
   - `homeassistant/`: Home Assistant configuration files
     - `configuration.yaml`: Main HA config with MQTT and Frigate integration
     - `automations.yaml`: Automation rules (examples for person detection notifications)
     - `blueprints/`: Reusable automation templates (motion_light, notify_leaving_zone, etc.)
   - `mosquitto/`: MQTT broker configuration (`mosquitto.conf`)
+- `/mnt/unas2/frigate` (host): Frigate recordings, clips and snapshots on network storage
 - `storage/`: Persistent data for all services (excluded from git)
-  - `frigate/`: Video recordings, snapshots, clips
   - `homeassistant/`: HA database and user data
   - `mosquitto/`: MQTT data and logs
 - `docker-compose.yml`: Complete stack orchestration with network isolation
 - `.env`: Active environment configuration (copy from `.env.example`)
+  - Camera credentials use one prefix per camera: `FRIGATE_HIKVISION1_CAMUSER/CAMPASS/CAMIP`, `FRIGATE_TAPO1_CAMUSER/CAMPASS/CAMIP`. Variables must start with `FRIGATE_` and also be listed in the frigate service environment in `docker-compose.yml`.
 
 ## Development Workflows
 
@@ -61,12 +65,12 @@ docker compose restart homeassistant
 # Stop services
 docker compose down
 
-# Update services to latest images
+# Update services (bump the pinned image tags in docker-compose.yml first)
 docker compose pull && docker compose up -d
 ```
 
 ### Configuration Management
-- Frigate config goes in `configs/frigate/config.yml` (current setup includes CPU detector, person/car tracking)
+- Frigate config goes in `configs/frigate/config.yml` (OpenVINO detector, person/car/motorcycle/bicycle tracking, LPR)
 - Home Assistant config in `configs/homeassistant/configuration.yaml` (MQTT discovery enabled)
 - MQTT broker config in `configs/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
 - Config changes require container restart: `docker compose restart <service>`
@@ -86,7 +90,7 @@ Frigate uses YAML configuration with these key sections:
 
 ### Storage Management
 - Recordings are automatically managed by Frigate's retention policies
-- `storage/` directory will contain subdirectories like:
+- Frigate media lives on `/mnt/unas2/frigate` (mounted at `/media/frigate`) and contains:
   - `recordings/`: Continuous recordings
   - `clips/`: Event-triggered clips
   - `snapshots/`: Still images from detections
@@ -108,13 +112,13 @@ Frigate uses YAML configuration with these key sections:
 - Current setup publishes to `frigate/` topic prefix with client ID `frigate`
 - MQTT broker accessible at `mqtt:1883` (container network) and `localhost:1883` (host)
 - WebSocket support on port `9001` for browser clients
-- Automation examples in `configs/homeassistant/automations.yaml`
+- `configs/homeassistant/automations.yaml` only has a commented-out example
 - Blueprint templates available in `configs/homeassistant/blueprints/`
 
 ### Hardware Acceleration
 - Configure GPU acceleration via `detectors` section
 - Supports Intel OpenVINO, NVIDIA TensorRT, Google Coral TPU
-- CPU-only detection is default but resource-intensive
+- This setup uses OpenVINO (`device: AUTO`) and VAAPI decoding through the WSL2 `d3d12` driver (`/dev/dxg`, `/usr/lib/wsl`)
 
 ## Common Configuration Examples
 
