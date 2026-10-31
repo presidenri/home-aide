@@ -6,8 +6,8 @@ mqtt:
   enabled: true
   host: mqtt  # Using Docker service name
   port: 1883
-  # user: frigate
-  # password: your-mqtt-password
+  user: '{FRIGATE_MQTT_USER}'
+  password: '{FRIGATE_MQTT_PASSWORD}'
   topic_prefix: frigate
   client_id: frigate
   stats_interval: 60
@@ -94,6 +94,11 @@ snapshots:
 
 # go2rtc configuration for WebRTC streaming
 go2rtc:
+  # Restream on :8554 requires these credentials for non-localhost clients
+  # (Home Assistant, LAN). Frigate's own 127.0.0.1 inputs don't need them.
+  rtsp:
+    username: '{FRIGATE_RTSP_USER}'
+    password: '{FRIGATE_RTSP_PASSWORD}'
   streams:
     # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
     home_garage_main:

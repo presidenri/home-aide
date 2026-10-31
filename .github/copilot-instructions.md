@@ -13,7 +13,7 @@ This is a complete **Home Assistant + Frigate NVR** setup using Docker Compose. 
 - **frigate**: AI-powered NVR service
   - Image: `ghcr.io/blakeblackshear/frigate:0.18.2`
   - Web UI: Port `8971`
-  - RTSP streams: Port `8554`
+  - RTSP streams: Port `8554` (go2rtc restream; requires `FRIGATE_RTSP_USER`/`FRIGATE_RTSP_PASSWORD` except from localhost)
   - Uses tmpfs cache (1GB) to reduce storage wear
   - Cameras: `home_garage_main` (Hikvision 8MP) and `c319_garage_main` (Tapo C319), each pulled once by go2rtc and read by Frigate from `rtsp://127.0.0.1:8554/<stream>`
   - Detector: OpenVINO with `model_cache/yolov9-t-converted.onnx`; LPR enabled (its models are auto-downloaded and gitignored)
@@ -72,7 +72,7 @@ docker compose pull && docker compose up -d
 ### Configuration Management
 - Frigate config goes in `configs/frigate/config.yml` (OpenVINO detector, person/car/motorcycle/bicycle tracking, LPR)
 - Home Assistant config in `configs/homeassistant/configuration.yaml` (MQTT discovery enabled)
-- MQTT broker config in `configs/mosquitto/mosquitto.conf` (anonymous access, persistence enabled)
+- MQTT broker config in `configs/mosquitto/mosquitto.conf` (password auth via gitignored `passwd`, persistence enabled)
 - Config changes require container restart: `docker compose restart <service>`
 - Access Frigate web interface at `http://localhost:8971` for configuration validation
 - Home Assistant web interface at `http://localhost:8123` (initial setup required)
@@ -147,6 +147,6 @@ When working with this codebase:
 3. Monitor container logs when debugging detection issues
 4. Consider hardware acceleration for multiple camera setups
 5. The `storage/` directory is gitignored - contains all persistent data
-6. For production: disable anonymous MQTT access in `mosquitto.conf`
+6. MQTT requires auth: Frigate uses `FRIGATE_MQTT_USER`/`FRIGATE_MQTT_PASSWORD`, Home Assistant's credentials are set in its MQTT integration UI
 7. Enable cameras by setting `enabled: true` in Frigate config after testing streams
 8. Use blueprints in `configs/homeassistant/blueprints/` for common automation patterns

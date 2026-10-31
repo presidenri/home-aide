@@ -22,7 +22,7 @@ services:
   # MQTT broker for Home Assistant and Frigate integration
   mqtt:
     container_name: mosquitto
-    image: eclipse-mosquitto:latest
+    image: eclipse-mosquitto:2.1.2-alpine
     restart: unless-stopped
     ports:
       - "1883:1883"
@@ -58,7 +58,10 @@ services:
       - "8971:8971"
       - "8554:8554" # RTSP feeds
     environment:
-      - FRIGATE_RTSP_PASSWORD=${FRIGATE_RTSP_PASSWORD:-password}
+      - FRIGATE_RTSP_USER=${FRIGATE_RTSP_USER:?set FRIGATE_RTSP_USER in .env}
+      - FRIGATE_RTSP_PASSWORD=${FRIGATE_RTSP_PASSWORD:?set FRIGATE_RTSP_PASSWORD in .env}
+      - FRIGATE_MQTT_USER=${FRIGATE_MQTT_USER:?set FRIGATE_MQTT_USER in .env}
+      - FRIGATE_MQTT_PASSWORD=${FRIGATE_MQTT_PASSWORD:?set FRIGATE_MQTT_PASSWORD in .env}
       - TZ=${TZ:-America/New_York}
       - FRIGATE_HIKVISION1_CAMUSER=${FRIGATE_HIKVISION1_CAMUSER}
       - FRIGATE_HIKVISION1_CAMPASS=${FRIGATE_HIKVISION1_CAMPASS}
@@ -89,7 +92,7 @@ services:
   # Cloudflare Tunnel for secure remote access to Home Assistant
   cloudflared:
     container_name: cloudflared
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.10.7
     restart: unless-stopped
     command: tunnel run
     environment:
