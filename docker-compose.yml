@@ -2,7 +2,7 @@ services:
   # Home Assistant - main home automation hub
   homeassistant:
     container_name: homeassistant
-    image: ghcr.io/home-assistant/home-assistant:2026.5
+    image: ghcr.io/home-assistant/home-assistant:2026.10.4
     restart: unless-stopped
     ports:
       - "8123:8123"
@@ -42,7 +42,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     shm_size: "138mb" # Increase shared memory for better performance
-    image: ghcr.io/blakeblackshear/frigate:0.17.1
+    image: ghcr.io/blakeblackshear/frigate:0.18.2
     volumes:
       - ./configs/frigate:/config # Config and database (local)
       - /mnt/unas2/frigate:/media/frigate # Recordings (network storage)

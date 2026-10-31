@@ -172,7 +172,7 @@ cameras:
 
 detect:
   enabled: true
-version: 0.17-0
+version: 0.18-0
 semantic_search:
   enabled: false
   model_size: small

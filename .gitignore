@@ -75,3 +75,7 @@ Thumbs.db
 tmp/
 temp/
 .tmp/
+
+# Frigate auto-downloaded models
+configs/frigate/model_cache/paddleocr-onnx/
+configs/frigate/model_cache/yolov9_license_plate/

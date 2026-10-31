@@ -75,15 +75,16 @@ objects:
 # Recording configuration
 record:
   enabled: true
-  retain:
-    days: 14
-    mode: motion
   alerts:
     retain:
       days: 14
   detections:
     retain:
       days: 14
+  continuous:
+    days: 0
+  motion:
+    days: 14
 snapshots:
   enabled: true
   timestamp: false
@@ -96,14 +97,14 @@ go2rtc:
   streams:
     # Hikvision DS-2CD2387G3-LI2UY 8MP Camera
     home_garage_main:
-      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/101
+      - rtsp://{FRIGATE_HIKVISION1_CAMUSER}:{FRIGATE_HIKVISION1_CAMPASS}@{FRIGATE_HIKVISION1_CAMIP}:554/Streaming/Channels/101
     home_garage_sub:
-      - rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/Streaming/Channels/102
+      - rtsp://{FRIGATE_HIKVISION1_CAMUSER}:{FRIGATE_HIKVISION1_CAMPASS}@{FRIGATE_HIKVISION1_CAMIP}:554/Streaming/Channels/102
     # TP-Link Tapo C319 4MP Camera
     c319_garage_main:
-      - rtsp://admintapo:{FRIGATE_CAMERA_PASSWORD}@192.168.20.34:554/stream1
+      - rtsp://{FRIGATE_TAPO1_CAMUSER}:{FRIGATE_TAPO1_CAMPASS}@{FRIGATE_TAPO1_CAMIP}:554/stream1
     c319_garage_sub:
-      - rtsp://admintapo:{FRIGATE_CAMERA_PASSWORD}@192.168.20.34:554/stream2
+      - rtsp://{FRIGATE_TAPO1_CAMUSER}:{FRIGATE_TAPO1_CAMPASS}@{FRIGATE_TAPO1_CAMIP}:554/stream2
 
 # Cameras configuration
 cameras:
@@ -171,7 +172,7 @@ cameras:
 
 detect:
   enabled: true
-version: 0.16-0
+version: 0.17-0
 semantic_search:
   enabled: false
   model_size: small
