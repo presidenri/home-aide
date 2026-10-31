@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Block commits that would add secrets. Enable with: git config core.hooksPath .githooks
+# Bypass (only if you're sure): git commit --no-verify
+set -u
+fail=0
+tmp=$(mktemp)
+trap 'rm -f "$tmp"' EXIT
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+for f in $staged; do
+  case "$f" in
+    .env|.env.local|.env.production|.env.staging|*/passwd|*.db|*.db-*|configs/frigate/.jwt_secret|configs/homeassistant/secrets.yaml)
+      echo "pre-commit: refusing to commit secret/runtime file: $f"; fail=1 ;;
+  esac
+done
+
+# Credentials in Frigate/HA/Mosquitto configs must come from {FRIGATE_*} env vars or !secret
+for f in $staged; do
+  case "$f" in configs/*.yml|configs/*.yaml|configs/*/*.yml|configs/*/*.yaml) ;; *) continue ;; esac
+  git show ":$f" | grep -n -E '^[^#]*\b(password|passwd|username|user|token|api_key):[[:space:]]*[^[:space:]]' \
+    | grep -v -E ":[[:space:]]*['\"]?\{FRIGATE_[A-Z0-9_]+\}['\"]?[[:space:]]*(#.*)?$|!secret |:[[:space:]]*(\[\]|\{\}|null|~)?[[:space:]]*$" \
+    | sed -E "s|^([0-9]+):[^a-z_]*([a-z_]+):.*|  $f:\1: \2: <literal value>|" > "$tmp"
+  git show ":$f" | grep -n -E '^[^#]*rtsp://[^{/@[:space:]]+:[^@[:space:]]+@' | grep -v -E 'rtsp://\{FRIGATE_[A-Z0-9_]+\}:\{FRIGATE_[A-Z0-9_]+\}@' \
+    | sed -E "s|^([0-9]+):.*|  $f:\1: rtsp URL with literal credentials|" >> "$tmp"
+  if [ -s "$tmp" ]; then
+    echo "pre-commit: literal credentials in $f (use '{FRIGATE_...}' env vars or !secret):"
+    cat "$tmp"; fail=1
+  fi
+  : > "$tmp"
+done
+
+[ $fail -eq 0 ] || { echo "Commit blocked. Fix the lines above, or use --no-verify if they are false positives."; exit 1; }

@@ -527,6 +527,13 @@ Contributions are welcome! Here's how you can help:
 5. Push to your fork: `git push origin feature/amazing-feature`
 6. Submit a pull request with detailed description
 
+### Secret Check (pre-commit hook)
+The repository ships a pre-commit hook that blocks committing `.env`, `passwd`, databases, and literal credentials in `configs/**/*.yml|yaml` (credentials must use `{FRIGATE_*}` env vars or `!secret`). Enable it once per clone:
+```bash
+git config core.hooksPath .githooks
+```
+Frigate's UI config editor may write resolved values back into `config.yml`, so check `git diff` before committing config changes.
+
 ### Commit Message Convention
 - `feat:` New feature
 - `fix:` Bug fix
