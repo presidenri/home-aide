@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- MQTT broker requires username/password (`allow_anonymous false`); separate users for Frigate and Home Assistant
+- go2rtc RTSP restream on port 8554 requires `FRIGATE_RTSP_USER` / `FRIGATE_RTSP_PASSWORD` for non-localhost clients
+- `docker-compose.yml` refuses to start Frigate without the RTSP and MQTT credentials instead of falling back to `password`
+
 ### Changed
 - Upgraded Frigate from 0.17.1 to 0.18.2 (includes 0.18.1/0.18.2 security fixes); config migrated to `version: 0.18-0`
 - Upgraded Home Assistant from 2026.5 to 2026.10.4

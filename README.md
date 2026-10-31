@@ -225,17 +225,34 @@ For secure remote access without port forwarding:
 
 ### MQTT Configuration
 
-The MQTT broker is pre-configured for anonymous access. For production use, edit [configs/mosquitto/mosquitto.conf](configs/mosquitto/mosquitto.conf) to add authentication:
+The MQTT broker requires a username and password ([mosquitto.conf](configs/mosquitto/mosquitto.conf) sets `allow_anonymous false`). Users live in `configs/mosquitto/passwd`, which is gitignored and has to be created on each install:
 
-```conf
-allow_anonymous false
-password_file /mosquitto/config/passwd
-```
-
-Then create password file:
 ```bash
-docker compose exec mqtt mosquitto_passwd -c /mosquitto/config/passwd username
+set -a; . ./.env; set +a
+docker compose exec -T mqtt sh -c 'umask 077
+  mosquitto_passwd -c -b /mosquitto/config/passwd "$1" "$2"
+  mosquitto_passwd -b /mosquitto/config/passwd "$3" "$4"
+  chown 1000:1000 /mosquitto/config/passwd' _ \
+  "$FRIGATE_MQTT_USER" "$FRIGATE_MQTT_PASSWORD" "$HA_MQTT_USER" "$HA_MQTT_PASSWORD"
+docker compose restart mqtt
 ```
+
+The broker runs as UID 1000 in this setup (`docker logs mosquitto` shows `running mosquitto as user id`), so `passwd` must be owned by that UID; if Mosquitto keeps restarting with `Unable to open pwfile`, the ownership is wrong.
+
+- **Frigate** reads `FRIGATE_MQTT_USER` / `FRIGATE_MQTT_PASSWORD` from the environment (see the `mqtt:` section of [config.yml](configs/frigate/config.yml)).
+- **Home Assistant** stores its MQTT credentials in the UI, not in YAML: Settings → Devices & services → MQTT → ⋮ → Reconfigure, then enter `HA_MQTT_USER` / `HA_MQTT_PASSWORD`.
+
+### RTSP Restream Authentication
+
+go2rtc's restream on port `8554` requires `FRIGATE_RTSP_USER` / `FRIGATE_RTSP_PASSWORD` for every client except localhost, so Frigate's own `rtsp://127.0.0.1:8554/...` inputs need no credentials.
+
+Home Assistant connects from another container, so the Frigate integration needs the credentials too: Settings → Devices & services → Frigate → Configure → **RTSP URL template**:
+
+```
+rtsp://<FRIGATE_RTSP_USER>:<FRIGATE_RTSP_PASSWORD>@frigate:8554/{{ name }}
+```
+
+Without it, camera streams in Home Assistant and the companion app fail to open (snapshots keep working, they use Frigate's API).
 
 ## 🛠️ Technology Stack
 
@@ -419,8 +436,15 @@ FRIGATE_TAPO1_CAMUSER=your-tapo-camera-account
 FRIGATE_TAPO1_CAMPASS=your-tapo-camera-password
 FRIGATE_TAPO1_CAMIP=192.168.1.101
 
-# Passed to Frigate, but not referenced by the current config
+# go2rtc restream credentials (port 8554)
+FRIGATE_RTSP_USER=frigate-rtsp
 FRIGATE_RTSP_PASSWORD=your-rtsp-password
+
+# MQTT users - Frigate reads its pair, Home Assistant's pair is entered in the HA UI
+FRIGATE_MQTT_USER=frigate
+FRIGATE_MQTT_PASSWORD=your-frigate-mqtt-password
+HA_MQTT_USER=homeassistant
+HA_MQTT_PASSWORD=your-ha-mqtt-password
 
 # Cloudflare Tunnel (optional)
 CLOUDFLARE_TUNNEL_TOKEN=your-tunnel-token
@@ -461,7 +485,7 @@ docker compose restart
 
 ### Production Deployment Checklist
 
-- [ ] Enable MQTT authentication (edit `mosquitto.conf`)
+- [ ] Create the MQTT users in `configs/mosquitto/passwd` (see [MQTT Configuration](#mqtt-configuration))
 - [ ] Use strong passwords in `.env` file
 - [ ] Secure Cloudflare Tunnel with Access policies
 - [ ] Use HTTPS for external access (handled by Cloudflare)
@@ -480,7 +504,7 @@ docker compose restart
 
 **Frigate Security:**
 - Web UI has basic authentication (set admin password on first login)
-- The go2rtc restream on port `8554` has **no authentication** in the current config; anyone on the LAN can view the camera streams. `FRIGATE_RTSP_PASSWORD` is set but not used.
+- The go2rtc restream on port `8554` requires `FRIGATE_RTSP_USER` / `FRIGATE_RTSP_PASSWORD` for non-localhost clients
 - Not directly exposed to internet (access via HA or Cloudflare Tunnel)
 
 ## Contributing
