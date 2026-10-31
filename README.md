@@ -24,26 +24,22 @@
 - [🚀 Quick Start](#-quick-start)
 - [⚙️ Configuration](#️-configuration)
 - [🛠️ Technology Stack](#️-technology-stack)
-- [📋 Management Commands](#-management-commands)
 - [🚀 Hardware Acceleration](#-hardware-acceleration)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [🔨 Development](#-development)
-- [⚡ Performance & Optimization](#-performance--optimization)
-- [🎯 Features & Capabilities](#-features--capabilities)
 - [🔐 Security Considerations](#-security-considerations)
 - [Contributing](#contributing)
-- [❓ FAQ](#-faq)
 - [📚 Additional Resources](#-additional-resources)
 
 ---
 
 ## ✨ What's New
 
-- 🧠 **OpenVINO AI Acceleration**: Upgraded from CPU to Intel OpenVINO with YOLOv9-T model for faster, more efficient object detection
-- ☁️ **Cloudflare Tunnel**: Secure remote access to Home Assistant without port forwarding
-- 📊 **Custom Dashboards**: Pre-built security dashboards with live camera feeds and detection status
-- 🎯 **Active Camera Configuration**: Hikvision DS-2CD2387G3-LI2UY (8MP/4K) fully configured with dual-stream support
-- 🔧 **Environment-Based Config**: Camera credentials managed via .env for easier deployment
+- ⬆️ **Frigate 0.18.2 & Home Assistant 2026.10.4**: Latest releases, including Frigate's 0.18.1/0.18.2 security fixes
+- 📹 **Two Cameras**: Hikvision DS-2CD2387G3-LI2UY (8MP) and TP-Link Tapo C319 (4MP), both dual-stream
+- 🔁 **go2rtc Restreaming**: Each camera is pulled once by go2rtc and shared with Frigate and live view
+- 🔢 **License Plate Recognition**: Frigate LPR enabled (models downloaded automatically on first start)
+- 🔧 **Per-Camera Credentials**: Each camera has its own `.env` variables (`FRIGATE_HIKVISION1_*`, `FRIGATE_TAPO1_*`)
 
 ## Features
 
@@ -51,7 +47,8 @@
 - 📹 **Frigate NVR**: AI-powered network video recorder with real-time object detection using YOLOv9-T
 - 🧠 **OpenVINO Detector**: CPU-optimized AI inference for efficient object detection
 - 📡 **MQTT Integration**: Seamless communication between services with automatic discovery
-- 🔍 **Object Detection**: Person, vehicle (car, bicycle, motorcycle), and pet (cat, dog) detection with configurable zones
+- 🔍 **Object Detection**: Person, car, bicycle and motorcycle detection (cat/dog available but disabled)
+- 🔢 **License Plate Recognition**: Plate detection and OCR on detected cars
 - 💾 **Smart Recording**: Automatic retention policies (14 days) with event-triggered clips and snapshots
 - 🌐 **Remote Access**: Secure access via Cloudflare Tunnel without exposing ports
 - 📱 **Mobile Ready**: Responsive web interfaces accessible from any device
@@ -63,11 +60,13 @@
 graph TB
     Internet[🌐 Internet]
     CloudFlare[☁️ Cloudflare Tunnel]
-    Camera[📹 Hikvision Camera 8MP/4K]
+    Camera[📹 Hikvision 8MP]
+    Camera2[📹 Tapo C319 4MP]
     
     HA[🏠 Home Assistant :8123]
     HADash[📊 Security Dashboards]
     
+    Go2rtc[🔁 go2rtc restream :8554]
     Frigate[🔍 Frigate NVR :8971]
     OpenVINO[🧠 OpenVINO YOLOv9-T]
     Detection[🎯 Object Detection]
@@ -80,7 +79,9 @@ graph TB
     
     Internet --> CloudFlare
     CloudFlare --> HA
-    Camera -->|RTSP 4K + Sub| Frigate
+    Camera -->|RTSP main + sub| Go2rtc
+    Camera2 -->|RTSP main + sub| Go2rtc
+    Go2rtc --> Frigate
     
     Frigate --> OpenVINO
     OpenVINO --> Detection
@@ -97,7 +98,7 @@ graph TB
 
 ### How It Works
 
-1. **Camera Streaming**: Hikvision camera sends dual RTSP streams (4K for recording, 640x360 for detection)
+1. **Camera Streaming**: Each camera sends two RTSP streams (high-res for recording, 640x360 for detection). go2rtc (built into Frigate) connects to each camera once and restreams it locally at `rtsp://127.0.0.1:8554/<stream>`.
 2. **AI Detection**: OpenVINO with YOLOv9-T model processes video frames for object detection
 3. **Event Communication**: Detection events published via MQTT to Home Assistant
 4. **Smart Storage**: Recordings stored on network storage, config/database on local SSD for performance
@@ -129,17 +130,24 @@ graph TB
    
    Required environment variables:
    - `TZ`: Your timezone (e.g., America/New_York)
-   - `FRIGATE_CAMERA_USERNAME`: Camera RTSP username
-   - `FRIGATE_CAMERA_PASSWORD`: Camera RTSP password
-   - `FRIGATE_CAMERA_IP`: Camera IP address
+   - `FRIGATE_HIKVISION1_CAMUSER` / `_CAMPASS` / `_CAMIP`: Hikvision camera credentials and IP
+   - `FRIGATE_TAPO1_CAMUSER` / `_CAMPASS` / `_CAMIP`: Tapo C319 camera account and IP
    - `CLOUDFLARE_TUNNEL_TOKEN`: (Optional) Cloudflare Tunnel token
 
-3. **Start the services**
+   See [Environment Variables](#environment-variables) for the full list.
+
+3. **Provide the detection model**
+
+   Frigate is configured to load `configs/frigate/model_cache/yolov9-t-converted.onnx` (640x640, NCHW, float). It is tracked in this repository, so a normal clone already has it. To build your own, follow the YOLOv9 export steps in the [Frigate object detector docs](https://docs.frigate.video/configuration/object_detectors/).
+
+   The license plate and OCR models in `model_cache/` are **not** tracked; Frigate downloads them on first start when `lpr` is enabled.
+
+4. **Start the services**
    ```bash
    docker compose up -d
    ```
 
-4. **Access the interfaces**
+5. **Access the interfaces**
    - Home Assistant: http://localhost:8123 (initial setup required)
    - Frigate NVR: http://localhost:8971 (check live detection and events)
    - MQTT WebSocket: http://localhost:9001
@@ -150,36 +158,55 @@ graph TB
 ### Current Setup
 
 The system is currently configured with:
-- **Camera**: Hikvison DS-2CD2387G3-LI2UY (8MP/4K)
-  - Main stream: 4K UHD for high-quality recording
-  - Sub stream: 640x360 for efficient AI detection
-  - Objects tracked: Person, car, bicycle, motorcycle
-- **AI Model**: YOLOv9-T optimized for Intel CPUs via OpenVINO
+- **Cameras**:
+  | Frigate camera | Model | Record stream | Detect stream |
+  |---|---|---|---|
+  | `home_garage_main` | Hikvision DS-2CD2387G3-LI2UY (8MP) | `Streaming/Channels/101` | `Streaming/Channels/102` (640x360) |
+  | `c319_garage_main` | TP-Link Tapo C319 (4MP) | `stream1` | `stream2` (640x360) |
+- **Objects tracked**: Person, car, bicycle, motorcycle
+- **License plate recognition**: Enabled
+- **AI Model**: YOLOv9-T via OpenVINO (`device: AUTO`, 2 threads)
+- **Video decoding**: VAAPI through the WSL2 `d3d12` driver
 - **Storage**: Network storage mounted at `/mnt/unas2/frigate` for recordings
-- **Retention**: 14 days for recordings, detections, and snapshots
-- **Hardware Acceleration**: Intel GPU with OpenVINO (active)
+- **Retention**: 14 days for alerts, detections, motion recordings and snapshots; no continuous recording
 
 ### Adding Additional Cameras
 
-Edit [configs/frigate/config.yml](configs/frigate/config.yml) to add more cameras:
+Cameras are added in two places in [configs/frigate/config.yml](configs/frigate/config.yml): a go2rtc stream that connects to the camera, and a Frigate camera that reads from go2rtc.
 
-```yaml
-cameras:
-  front_door:
-    enabled: true
-    ffmpeg:
-      inputs:
-        # High res stream for recording
-        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/main_stream
-          roles: ["record"]
-        # Low res stream for detection
-        - path: rtsp://{FRIGATE_CAMERA_USERNAME}:{FRIGATE_CAMERA_PASSWORD}@{FRIGATE_CAMERA_IP}:554/sub_stream
-          roles: ["detect"]
-    detect:
-      width: 640
-      height: 360
-      fps: 5
-```
+1. Add credentials to `.env` using a new prefix (variables must start with `FRIGATE_` to be usable in the config):
+   ```bash
+   FRIGATE_FRONTDOOR1_CAMUSER=admin
+   FRIGATE_FRONTDOOR1_CAMPASS=your-camera-password
+   FRIGATE_FRONTDOOR1_CAMIP=192.168.1.101
+   ```
+2. Pass them to the container in the `frigate.environment` list in [docker-compose.yml](docker-compose.yml).
+3. Add the streams and the camera:
+   ```yaml
+   go2rtc:
+     streams:
+       front_door_main:
+         - rtsp://{FRIGATE_FRONTDOOR1_CAMUSER}:{FRIGATE_FRONTDOOR1_CAMPASS}@{FRIGATE_FRONTDOOR1_CAMIP}:554/main_stream
+       front_door_sub:
+         - rtsp://{FRIGATE_FRONTDOOR1_CAMUSER}:{FRIGATE_FRONTDOOR1_CAMPASS}@{FRIGATE_FRONTDOOR1_CAMIP}:554/sub_stream
+
+   cameras:
+     front_door_main:
+       enabled: true
+       ffmpeg:
+         inputs:
+           - path: rtsp://127.0.0.1:8554/front_door_main
+             input_args: preset-rtsp-restream
+             roles: [record]
+           - path: rtsp://127.0.0.1:8554/front_door_sub
+             input_args: preset-rtsp-restream
+             roles: [detect]
+       detect:
+         width: 640
+         height: 360
+         fps: 5
+   ```
+4. Recreate the container so the new variables are picked up: `docker compose up -d frigate`
 
 **Tip**: Use the Frigate web UI at http://localhost:8971 to visually define detection zones by clicking on the camera feed.
 
@@ -214,26 +241,26 @@ docker compose exec mqtt mosquitto_passwd -c /mosquitto/config/passwd username
 
 ### Core Services
 - **Home Assistant**: Main automation hub (Port 8123)
-  - Version: Latest stable from ghcr.io/home-assistant
-  - Integrations: Frigate, MQTT, custom dashboards
+  - Version: `2026.10.4` (pinned in `docker-compose.yml`)
+  - Integrations: Frigate (HACS, 5.15.6), MQTT, custom dashboards
 - **Frigate NVR**: AI-powered video recorder (Ports 8971 web, 8554 RTSP)
-  - Version: Latest stable from ghcr.io/blakeblackshear/frigate
+  - Version: `0.18.2` (pinned in `docker-compose.yml`)
   - Detector: OpenVINO with YOLOv9-T model
-  - Detection objects: Person, car, bicycle, motorcycle, cat, dog
+  - Detection objects: Person, car, bicycle, motorcycle
 - **MQTT Broker**: Mosquitto message broker (Ports 1883, 9001)
-  - Version: Latest eclipse-mosquitto
+  - Version: `eclipse-mosquitto:latest`
   - Features: WebSocket support, persistent data
 - **Cloudflare Tunnel**: Secure remote access gateway
-  - Version: Latest cloudflare/cloudflared
+  - Version: `cloudflare/cloudflared:latest`
   - No port forwarding required
 
 ### AI & Detection
 - **YOLOv9-T Model**: Lightweight YOLO variant optimized for real-time detection
 - **OpenVINO Runtime**: Intel's inference acceleration toolkit for CPU optimization
-- **Detection Parameters**:
-  - Person: 5,000-100,000 px² area, 70% confidence threshold
-  - Car: 15,000-50,000 px² area, 70% confidence threshold
-  - Configurable zones and object filters
+- **Detection Parameters** (all tracked objects):
+  - `min_score: 0.65` (minimum score for a single detection)
+  - `threshold: 0.75` (score needed to count as a real object; `0.85` for bicycle)
+  - Zones are not configured yet; add them in the Frigate UI
 
 ### Storage Strategy
 ```
@@ -259,8 +286,11 @@ All services communicate via a dedicated Docker network (`frigate-network`) with
 
 ## 🚀 Hardware Acceleration
 
-### Current Setup: OpenVINO (Active)
-The system currently uses Intel OpenVINO for CPU-accelerated AI inference, providing efficient object detection without dedicated GPU hardware.
+### Current Setup: OpenVINO + VAAPI on WSL2 (Active)
+- **Object detection**: OpenVINO with `device: AUTO`, which uses the GPU when available and falls back to the CPU.
+- **Video decoding**: FFmpeg uses VAAPI (`-hwaccel vaapi`). On WSL2 this goes through Mesa's `d3d12` driver to the Windows GPU, which is why `docker-compose.yml` passes `/dev/dxg`, mounts `/usr/lib/wsl` and sets `LIBVA_DRIVER_NAME=d3d12`.
+
+On a native Linux host with an Intel GPU, the WSL-specific devices, mounts and environment variables can be removed; `/dev/dri` is enough.
 
 ## 🔧 Troubleshooting
 
@@ -298,8 +328,8 @@ home-aide/
 ├── configs/                        # All service configurations
 │   ├── frigate/
 │   │   ├── config.yml             # Main Frigate config (cameras, detectors, objects)
-│   │   ├── backup_config.yaml     # Config backup
-│   │   └── model_cache/           # AI model files (YOLOv9-T)
+│   │   ├── backup_config.yaml     # Previous config, written by Frigate (gitignored)
+│   │   └── model_cache/           # YOLOv9-T model (tracked) + auto-downloaded LPR/OCR models (ignored)
 │   ├── homeassistant/
 │   │   ├── configuration.yaml     # Main HA config
 │   │   ├── automations.yaml       # Automation rules
@@ -310,9 +340,7 @@ home-aide/
 │       └── mosquitto.conf         # MQTT broker configuration
 ├── storage/                        # Persistent data (gitignored)
 │   ├── homeassistant/             # HA database and logs
-│   ├── mosquitto/                 # MQTT data and logs
-│   ├── clips/                     # Event-triggered video clips
-│   └── recordings/                # Continuous recordings (on network storage)
+│   └── mosquitto/                 # MQTT data and logs
 └── README.md                       # This file
 ```
 
@@ -353,21 +381,22 @@ home-aide/
 
 ### Adding Custom Automations
 
-Create in [configs/homeassistant/automations.yaml](configs/homeassistant/automations.yaml):
+[configs/homeassistant/automations.yaml](configs/homeassistant/automations.yaml) ships with only a commented-out example, so no automations are active by default. Create your own there or in the Home Assistant UI, for example:
 ```yaml
 - id: '1234567890'
   alias: Person Detected at Night
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.home_garage_main_person_occupancy
       to: 'on'
-  condition:
+  conditions:
     - condition: sun
       after: sunset
-  action:
-    - service: light.turn_on
-      entity_id: light.outdoor_lights
-    - service: notify.mobile_app
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.outdoor_lights
+    - action: notify.mobile_app_your_phone
       data:
         message: Person detected outside
         title: Security Alert
@@ -380,12 +409,17 @@ Key variables in `.env`:
 # Timezone
 TZ=America/New_York
 
-# Camera credentials (used in Frigate config)
-FRIGATE_CAMERA_USERNAME=admin
-FRIGATE_CAMERA_PASSWORD=your-password
-FRIGATE_CAMERA_IP=192.168.1.100
+# Hikvision DS-2CD2387G3-LI2UY (home_garage_main)
+FRIGATE_HIKVISION1_CAMUSER=admin
+FRIGATE_HIKVISION1_CAMPASS=your-camera-password
+FRIGATE_HIKVISION1_CAMIP=192.168.1.100
 
-# RTSP password (for Frigate's RTSP restream)
+# TP-Link Tapo C319 (c319_garage_main) - camera account from the Tapo app
+FRIGATE_TAPO1_CAMUSER=your-tapo-camera-account
+FRIGATE_TAPO1_CAMPASS=your-tapo-camera-password
+FRIGATE_TAPO1_CAMIP=192.168.1.101
+
+# Passed to Frigate, but not referenced by the current config
 FRIGATE_RTSP_PASSWORD=your-rtsp-password
 
 # Cloudflare Tunnel (optional)
@@ -433,7 +467,7 @@ docker compose restart
 - [ ] Use HTTPS for external access (handled by Cloudflare)
 - [ ] Restrict Home Assistant to trusted networks (if not using tunnel)
 - [ ] Enable Home Assistant authentication
-- [ ] Regularly update Docker images: `docker compose pull`
+- [ ] Regularly update Docker images: bump the pinned tags in `docker-compose.yml`, then `docker compose pull && docker compose up -d`
 - [ ] Backup configuration files regularly
 - [ ] Monitor logs for unauthorized access attempts
 
@@ -446,7 +480,7 @@ docker compose restart
 
 **Frigate Security:**
 - Web UI has basic authentication (set admin password on first login)
-- RTSP restream password set via `FRIGATE_RTSP_PASSWORD` env var
+- The go2rtc restream on port `8554` has **no authentication** in the current config; anyone on the LAN can view the camera streams. `FRIGATE_RTSP_PASSWORD` is set but not used.
 - Not directly exposed to internet (access via HA or Cloudflare Tunnel)
 
 ## Contributing

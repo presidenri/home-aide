@@ -36,6 +36,11 @@ configs/frigate/.jwt_secret
 configs/frigate/.timeline
 configs/frigate/.vacuum
 configs/frigate/backup.db
+configs/frigate/backup_config.yaml
+configs/frigate/.search_stats.json
+configs/frigate/.runtime_state.json*
+configs/frigate/go2rtc_homekit.yml
+configs/frigate/config.yml.*
 
 # MQTT data
 configs/mosquitto/passwd
