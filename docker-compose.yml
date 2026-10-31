@@ -22,7 +22,7 @@ services:
   # MQTT broker for Home Assistant and Frigate integration
   mqtt:
     container_name: mosquitto
-    image: eclipse-mosquitto:latest
+    image: eclipse-mosquitto:2.1.2-alpine
     restart: unless-stopped
     ports:
       - "1883:1883"
@@ -92,7 +92,7 @@ services:
   # Cloudflare Tunnel for secure remote access to Home Assistant
   cloudflared:
     container_name: cloudflared
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.10.7
     restart: unless-stopped
     command: tunnel run
     environment:

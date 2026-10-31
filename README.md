@@ -265,10 +265,10 @@ Without it, camera streams in Home Assistant and the companion app fail to open 
   - Detector: OpenVINO with YOLOv9-T model
   - Detection objects: Person, car, bicycle, motorcycle
 - **MQTT Broker**: Mosquitto message broker (Ports 1883, 9001)
-  - Version: `eclipse-mosquitto:latest`
+  - Version: `2.1.2-alpine` (pinned in `docker-compose.yml`)
   - Features: WebSocket support, persistent data
 - **Cloudflare Tunnel**: Secure remote access gateway
-  - Version: `cloudflare/cloudflared:latest`
+  - Version: `2026.10.7` (pinned in `docker-compose.yml`)
   - No port forwarding required
 
 ### AI & Detection

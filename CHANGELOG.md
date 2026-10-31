@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docker-compose.yml` refuses to start Frigate without the RTSP and MQTT credentials instead of falling back to `password`
 
 ### Changed
+- Pinned Mosquitto to `eclipse-mosquitto:2.1.2-alpine` (was `latest`, running 2.1.0) and cloudflared to `2026.10.7` (was `latest`, running 2026.2.0)
 - Upgraded Frigate from 0.17.1 to 0.18.2 (includes 0.18.1/0.18.2 security fixes); config migrated to `version: 0.18-0`
 - Upgraded Home Assistant from 2026.5 to 2026.10.4
 - Frigate's auto-downloaded LPR and PaddleOCR models and runtime files (`backup_config.yaml`, `.search_stats.json`, `go2rtc_homekit.yml`) are no longer tracked in git
