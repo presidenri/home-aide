@@ -166,7 +166,7 @@ The system is currently configured with:
 - **Objects tracked**: Person, car, bicycle, motorcycle
 - **License plate recognition**: Enabled
 - **AI Model**: YOLOv9-T via OpenVINO (`device: AUTO`, 2 threads)
-- **Video decoding**: VAAPI through the WSL2 `d3d12` driver
+- **Video decoding**: CPU (only the 640x360 detect streams are decoded)
 - **Storage**: Network storage mounted at `/mnt/unas2/frigate` for recordings
 - **Retention**: 14 days for alerts, detections, motion recordings and snapshots; no continuous recording
 
@@ -303,9 +303,10 @@ All services communicate via a dedicated Docker network (`frigate-network`) with
 
 ## 🚀 Hardware Acceleration
 
-### Current Setup: OpenVINO + VAAPI on WSL2 (Active)
+### Current Setup: OpenVINO on WSL2 (Active)
 - **Object detection**: OpenVINO with `device: AUTO`, which uses the GPU when available and falls back to the CPU.
-- **Video decoding**: FFmpeg uses VAAPI (`-hwaccel vaapi`). On WSL2 this goes through Mesa's `d3d12` driver to the Windows GPU, which is why `docker-compose.yml` passes `/dev/dxg`, mounts `/usr/lib/wsl` and sets `LIBVA_DRIVER_NAME=d3d12`.
+- **GPU access on WSL2**: OpenVINO reaches the Windows GPU through `/dev/dxg`, which is why `docker-compose.yml` passes `/dev/dxg`, mounts `/usr/lib/wsl` and sets `LD_LIBRARY_PATH=/usr/lib/wsl/lib`.
+- **Video decoding**: CPU. VAAPI through Mesa's `d3d12` driver works on WSL2 but was unreliable (it sometimes failed to start, and a stall that froze both cameras and the detector at once pointed at the shared GPU path). The detect streams are small enough that CPU decoding costs little.
 
 On a native Linux host with an Intel GPU, the WSL-specific devices, mounts and environment variables can be removed; `/dev/dri` is enough.
 

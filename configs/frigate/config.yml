@@ -30,8 +30,10 @@ model:
   path: /config/model_cache/yolov9-t-converted.onnx
   labelmap_path: /labelmap/coco-80.txt
 
-ffmpeg:
-  hwaccel_args: -hwaccel vaapi -hwaccel_device /dev/dri/card0
+# No ffmpeg hwaccel: the detect streams are only 640x360 @ 5 fps, which is cheap
+# to decode on the CPU, and VAAPI through the WSL2 d3d12 driver failed to start
+# on some ffmpeg restarts and is suspected in a GPU-path stall (both cameras and
+# the detector froze together). Recording streams are copied, never decoded.
 
 # Detectors configuration (using OpenVINO with YOLOv9-T for Intel CPU)
 detectors:
