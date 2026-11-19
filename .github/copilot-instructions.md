@@ -118,7 +118,7 @@ Frigate uses YAML configuration with these key sections:
 ### Hardware Acceleration
 - Configure GPU acceleration via `detectors` section
 - Supports Intel OpenVINO, NVIDIA TensorRT, Google Coral TPU
-- This setup uses OpenVINO (`device: AUTO`) and VAAPI decoding through the WSL2 `d3d12` driver (`/dev/dxg`, `/usr/lib/wsl`)
+- This setup uses OpenVINO (`device: AUTO`) on the WSL2 GPU (`/dev/dxg`, `/usr/lib/wsl`); ffmpeg decodes on the CPU (no `hwaccel_args`)
 
 ## Common Configuration Examples
 
